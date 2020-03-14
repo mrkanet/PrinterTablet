@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="top"
+        android:padding="16dp">
+
+    <Button
+            android:id="@+id/btnPrint"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="Print Document"
+            android:layout_margin="4dp"/>
+
+    <Button
+            android:id="@+id/btnDownloadAndPrint"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="Download File and Print"
+            android:layout_margin="4dp"/>
+
+    <Button
+            android:id="@+id/btnNext"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="Next -> Print From Fragment"
+            android:layout_margin="4dp"/>
+
+    <Button
+        android:id="@+id/btnCreatePdf"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="Create Pdf"
+        android:layout_margin="4dp"/>
+
+    <Button
+        android:id="@+id/btnPrintPdf"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="Print Pdf"
+        android:layout_margin="4dp"/>
+
+
+    <Button
+        android:id="@+id/btnGcp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="GCP"
+        android:layout_margin="4dp"/>
+
+</LinearLayout>

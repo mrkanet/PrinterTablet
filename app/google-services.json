@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "210759263189",
+    "firebase_url": "https://coffeeprinter.firebaseio.com",
+    "project_id": "coffeeprinter",
+    "storage_bucket": "coffeeprinter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210759263189:android:a7102a02d3a92eeacc135c",
+        "android_client_info": {
+          "package_name": "net.mrkaan.printer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "210759263189-hk8ab51b1amru4jf4rng3envknai500a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.mrkaan.printer",
+            "certificate_hash": "c465908d911d52b81f1f1dfaf572e70b0bf61722"
+          }
+        },
+        {
+          "client_id": "210759263189-7la673a35tj7j9qt395ssqtulbq76urq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTN5OAxhmOXKreHYC5BhHDQd3Z1NN4UZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "210759263189-7la673a35tj7j9qt395ssqtulbq76urq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

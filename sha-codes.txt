@@ -1,0 +1,37 @@
+Alias name: androiddebugkey
+Creation date: Aug 5, 2019
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: C=US, O=Android, CN=Android Debug
+Issuer: C=US, O=Android, CN=Android Debug
+Serial number: 1
+Valid from: Mon Aug 05 11:53:17 EET 2019 until: Wed Jul 28 11:53:17 EET 2049
+Certificate fingerprints:
+         MD5:  9D:2C:30:EC:DF:E6:2B:6A:C3:69:21:16:8F:34:00:30
+         SHA1: C4:65:90:8D:91:1D:52:B8:1F:1F:1D:FA:F5:72:E7:0B:0B:F6:17:22
+         SHA256: CD:B8:73:FB:7D:BF:CD:F3:D9:16:3E:47:B6:C4:05:50:79:62:2B:E6:3A:9B:93:1A:33:36:26:E4:7C:1B:DC:0C
+Signature algorithm name: SHA1withRSA
+Subject Public Key Algorithm: 1024-bit RSA key
+Version: 1
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore C:\Users\mrk88\.android\debug.keystore -destkeystore C:\Users\mrk88\.android\debug.keystore -deststoretype pkcs12".Alias name: androiddebugkey
+Creation date: Aug 5, 2019
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: C=US, O=Android, CN=Android Debug
+Issuer: C=US, O=Android, CN=Android Debug
+Serial number: 1
+Valid from: Mon Aug 05 11:53:17 EET 2019 until: Wed Jul 28 11:53:17 EET 2049
+Certificate fingerprints:
+         MD5:  9D:2C:30:EC:DF:E6:2B:6A:C3:69:21:16:8F:34:00:30
+         SHA1: C4:65:90:8D:91:1D:52:B8:1F:1F:1D:FA:F5:72:E7:0B:0B:F6:17:22
+         SHA256: CD:B8:73:FB:7D:BF:CD:F3:D9:16:3E:47:B6:C4:05:50:79:62:2B:E6:3A:9B:93:1A:33:36:26:E4:7C:1B:DC:0C
+Signature algorithm name: SHA1withRSA
+Subject Public Key Algorithm: 1024-bit RSA key
+Version: 1
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore C:\Users\mrk88\.android\debug.keystore -destkeystore C:\Users\mrk88\.android\debug.keystore -deststoretype pkcs12".

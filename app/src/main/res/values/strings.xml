@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Printer</string>,
+    <string name="gg_client_web_id">210759263189-7la673a35tj7j9qt395ssqtulbq76urq.apps.googleusercontent.com</string>
+    <string name="gg_client_web_secret">yqL9ULjqgajtM4hbRiBNpXRR</string>
+    <string name="order_image">Order\'s Image</string>
+    <string name="yes">Evet</string>
+    <string name="message_no_new_order">Yeni sipariş bulunmamaktadır.</string>
+    <string name="pizza_guy_when_we_need_it_it_comes">Pizza guy when we need it, it comes.</string>
+</resources>
