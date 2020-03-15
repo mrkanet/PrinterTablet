@@ -33,7 +33,7 @@ import static java.lang.Math.abs;
 public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter.OnOrderSelectedListener {
     //static number definitions
     //private static final String TAG = "QueueActivity";
-    private static final int RC_SIGN_IN = 9001;
+
     private static final int LIMIT = 50;
 
     //definitions
@@ -69,35 +69,11 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
     @Override
     public void onStart() {
         super.onStart();
-        // Start sign in if necessary
-        if (shouldStartSignIn()) {
-            startSignIn();
-            return;
-        }
+
         // Apply filters
         //we have no filter
         //onFilter(mViewModel.getFilters());
         if (vOrdersVPAdapter != null) vOrdersVPAdapter.startListening();
-    }
-
-    private void startSignIn() {
-        // Sign in with FirebaseUI
-        Intent intent = AuthUI.getInstance().createSignInIntentBuilder()
-                .setAvailableProviders(Collections.singletonList(
-                        new AuthUI.IdpConfig.EmailBuilder().build()))
-                .setIsSmartLockEnabled(false)
-                .build();
-
-        startActivityForResult(intent, RC_SIGN_IN);
-        setSignIn(true);
-    }
-
-    private boolean shouldStartSignIn() {
-        return (!isSignIn && FirebaseAuth.getInstance().getCurrentUser() == null);
-    }
-
-    public void setSignIn(boolean signIn) {
-        isSignIn = signIn;
     }
 
     private void initFirestore() {

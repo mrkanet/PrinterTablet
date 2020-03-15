@@ -4,12 +4,13 @@ package net.mrkaan.printer.model;
 import android.location.Location;
 
 
+import com.firebase.geofire.GeoLocation;
+
 import java.util.List;
 
 public class Cafe {
-    private int cafeId;
-    private Location location;
-    private String name, phone, email;
+    private GeoLocation location;
+    private String cafeId, name, phone, email;
     private Response queue;
 
     public Response getQueueOk() {
@@ -23,19 +24,19 @@ public class Cafe {
     private Response queueOk;
     private Boolean state;
 
-    public int getCafeId() {
+    public String getCafeId() {
         return cafeId;
     }
 
-    public void setCafeId(int cafeId) {
+    public void setCafeId(String cafeId) {
         this.cafeId = cafeId;
     }
 
-    public Location getLocation() {
+    public GeoLocation getLocation() {
         return location;
     }
 
-    public void setLocation(Location location) {
+    public void setLocation(GeoLocation location) {
         this.location = location;
     }
 
@@ -82,9 +83,9 @@ public class Cafe {
     }
 
     public Cafe(
-            int cafeId,
+            String cafeId,
             String email,
-            Location location,
+            GeoLocation location,
             String name,
             String phone,
             Response queue,

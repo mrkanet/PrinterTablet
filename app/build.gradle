@@ -45,6 +45,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:21.4.1'
     implementation 'com.google.firebase:firebase-database:19.2.1'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
+    implementation 'com.firebase:geofire-android:3.0.0'
 
 
     testImplementation 'junit:junit:4.13'
@@ -55,7 +56,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.itextpdf:itextg:5.5.10'
     implementation 'com.koushikdutta.ion:ion:3.0.8'
-    implementation 'com.google.firebase:firebase-auth:19.2.0'
+    implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
 
     //glide image downloading and caching
