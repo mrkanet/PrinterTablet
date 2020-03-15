@@ -52,11 +52,14 @@ import net.mrkaan.printer.services.PrintCompleteService;
 import net.mrkaan.printer.services.PrintUtility;
 import net.mrkaan.printer.services.WifiScanner;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 public class MyActivity extends Activity implements Observer, PrintCompleteService {
 
@@ -94,89 +97,71 @@ public class MyActivity extends Activity implements Observer, PrintCompleteServi
                 mWifiScanner
         );
 
-        mBtnPrint = (Button) findViewById(R.id.btnPrint);
-        btnPrintPdf = (Button) findViewById(R.id.btnPrintPdf);
-        btnCreatePdf = (Button) findViewById(R.id.btnCreatePdf);
-        btnGcp = (Button) findViewById(R.id.btnGcp);
+        mBtnPrint = findViewById(R.id.btnPrint);
+        btnPrintPdf = findViewById(R.id.btnPrintPdf);
+        btnCreatePdf = findViewById(R.id.btnCreatePdf);
+        btnGcp = findViewById(R.id.btnGcp);
 
-        mBtnDownloadAndPrint = (Button) findViewById(R.id.btnDownloadAndPrint);
-        mBtnPrintFromFragment = (Button) findViewById(R.id.btnNext);
+        mBtnDownloadAndPrint = findViewById(R.id.btnDownloadAndPrint);
+        mBtnPrintFromFragment = findViewById(R.id.btnNext);
 
-        mBtnDownloadAndPrint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mPrintDialog.show();
-                mObservable.attach(MyActivity.this);
-                if (Util.hasConnection(MyActivity.this)) {
-                    mPrintUtility.downloadAndPrint("fileUrl", "fileName with extension");
-                } else {
-                    mObservable.notifyObserver(true);
-                    Toast.makeText(MyActivity.this, "Please connect to Internet", Toast.LENGTH_SHORT).show();
-                }
+        mBtnDownloadAndPrint.setOnClickListener(view -> {
+            mPrintDialog.show();
+            mObservable.attach(MyActivity.this);
+            if (Util.hasConnection(MyActivity.this)) {
+                mPrintUtility.downloadAndPrint("fileUrl", "fileName with extension");
+            } else {
+                mObservable.notifyObserver(true);
+                Toast.makeText(MyActivity.this, "Please connect to Internet", Toast.LENGTH_SHORT).show();
             }
         });
 
-        mBtnPrint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mPrintDialog.show();
-                mObservable.attach(MyActivity.this);
-                mPrintUtility.print( mPdfFile);
+        mBtnPrint.setOnClickListener(view -> {
+            mPrintDialog.show();
+            mObservable.attach(MyActivity.this);
+            mPrintUtility.print( mPdfFile);
+        });
+
+        btnPrintPdf.setOnClickListener(view -> {
+
+            DebugLog.write( mPdfFile.length());
+          //  mPrintUtility.print( mPdfFile);
+
+            if (Util.computePDFPageCount(mPdfFile) > 0) {
+                DebugLog.write();
+                mPrintUtility.printDocument(mPdfFile);
             }
         });
 
-        btnPrintPdf.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnGcp.setOnClickListener(view -> {
+          DebugLog.write();
+            Intent intent = new Intent(MyActivity.this, GCPActivity.class);
 
-                DebugLog.write( mPdfFile.length());
-              //  mPrintUtility.print( mPdfFile);
-
-                if (Util.computePDFPageCount(mPdfFile) > 0) {
-                    DebugLog.write();
-                    mPrintUtility.printDocument(mPdfFile);
-                }
-            }
+            startActivity(intent);
         });
 
-        btnGcp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-              DebugLog.write();
-                Intent intent = new Intent(MyActivity.this, GCPActivity.class);
+        btnCreatePdf.setOnClickListener(view -> {
 
-                startActivity(intent);
-            }
+            DebugLog.write("Create Pdf");
+           //stringtopdf("Merhaba");
+           // createPdf();
+            //createImage();
+          //  createNativePdf();
+            createNativePdf2();
+            /*try {
+                externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+                File folder = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER);
+                mPdfFile = new File(folder, "test.pdf");
+                DebugLog.write(externalStorageDirectory);
+                DebugLog.write(folder.getAbsolutePath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }*/
         });
 
-        btnCreatePdf.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                DebugLog.write("Create Pdf");
-               //stringtopdf("Merhaba");
-               // createPdf();
-                //createImage();
-              //  createNativePdf();
-                createNativePdf2();
-                /*try {
-                    externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
-                    File folder = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER);
-                    mPdfFile = new File(folder, "test.pdf");
-                    DebugLog.write(externalStorageDirectory);
-                    DebugLog.write(folder.getAbsolutePath());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }*/
-            }
-        });
-
-        mBtnPrintFromFragment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) { DebugLog.write();
-                Intent iNext = new Intent(MyActivity.this, PrintFragmentActivity.class);
-                startActivity(iNext);
-            }
+        mBtnPrintFromFragment.setOnClickListener(view -> { DebugLog.write();
+            Intent iNext = new Intent(MyActivity.this, PrintFragmentActivity.class);
+            startActivity(iNext);
         });
 
         initPrintDialog();
@@ -201,6 +186,7 @@ public class MyActivity extends Activity implements Observer, PrintCompleteServi
         mPrintDialog = new Dialog(this);
         mPrintDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window window = mPrintDialog.getWindow();
+        assert window != null;
         window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mPrintDialog.setContentView(R.layout.dialog_progressbar);
@@ -209,34 +195,23 @@ public class MyActivity extends Activity implements Observer, PrintCompleteServi
         mPrintDialog.setCancelable(true);
         mPrintDialog.setCanceledOnTouchOutside(false);
 
-        mPrintDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-            @Override
-            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) { DebugLog.write();
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    AlertDialog.Builder alert = new AlertDialog.Builder(MyActivity.this);
+        mPrintDialog.setOnKeyListener((dialog, keyCode, event) -> { DebugLog.write();
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                AlertDialog.Builder alert = new AlertDialog.Builder(MyActivity.this);
 
-                    alert.setMessage("Do you want to cancel printing?");
+                alert.setMessage("Do you want to cancel printing?");
 
-                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                            mPrintUtility.onPrintCancelled();
-                        }
-                    });
+                alert.setPositiveButton("OK", (dialogInterface, i) -> {
+                    dialogInterface.dismiss();
+                    mPrintUtility.onPrintCancelled();
+                });
 
-                    alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    });
+                alert.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
 
-                    alert.show();
-                    return true;
-                }
-                return false;
+                alert.show();
+                return true;
             }
+            return false;
         });
     }
 
@@ -244,7 +219,6 @@ public class MyActivity extends Activity implements Observer, PrintCompleteServi
     protected void onResume() {
         super.onResume();
         // stores printer configuration and prints..
-
 
             /*
             try {
@@ -366,8 +340,8 @@ public class MyActivity extends Activity implements Observer, PrintCompleteServi
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions,
+                                           @NotNull int[] grantResults) {
         if (requestCode == Constants.REQUEST_CODE__ACCESS_COARSE_LOCATION
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // TODO: What you want to do when it works or maybe .PERMISSION_DENIED if it works better
@@ -401,7 +375,7 @@ public class MyActivity extends Activity implements Observer, PrintCompleteServi
             document.add(mOrderDetailsTitleParagraph);
             document.add(lineSeparator);
             document.close();
-        }catch (Exception e){}
+        }catch (Exception ignored){}
 // Open to write
 
 
@@ -475,7 +449,7 @@ e.printStackTrace();
             document.close();
 
         }catch (IOException e){
-            Log.i("error",e.getLocalizedMessage());
+            Log.i("error", Objects.requireNonNull(e.getLocalizedMessage()));
         }
 
     }
