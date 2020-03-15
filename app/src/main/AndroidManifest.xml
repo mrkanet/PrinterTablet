@@ -21,7 +21,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.activities.OrdersActivity"></activity>
+        <activity android:name=".ui.activities.OrderPreviewActivity" />
+        <activity android:name=".ui.activities.OrdersActivity" />
         <activity android:name=".ui.activities.PrintScreenActivity" />
         <activity android:name=".ui.activities.PrintActivity" />
         <activity android:name=".MainActivity">

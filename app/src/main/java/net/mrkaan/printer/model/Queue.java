@@ -2,7 +2,6 @@ package net.mrkaan.printer.model;
 
 import android.location.Location;
 
-import java.util.Date;
 import java.util.List;
 
 class Response {
@@ -22,6 +21,7 @@ public class Queue {
     private Boolean state, inCafe;
     //private Date time;
     private Long time;
+
 
     public int getOrderId() {
         return orderId;

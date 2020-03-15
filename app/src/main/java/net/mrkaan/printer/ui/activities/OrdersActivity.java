@@ -133,8 +133,14 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
     public void onOrderSelected(DocumentSnapshot order) {
         //burada arduino ve print işlemleri yapılacak
         Queue queue = makeQueue(Objects.requireNonNull(order.getData()));
-        //Toast.makeText(getApplicationContext(), String.valueOf(queue.getUserId()), Toast.LENGTH_SHORT).show();
-        Toast.makeText(getApplicationContext(),queue.getPictureUrl(),Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(getApplicationContext(), OrderPreviewActivity.class);
+        intent.putExtra("orderId",queue.getOrderId());
+        intent.putExtra("userId", queue.getUserId());
+        intent.putExtra("time", queue.getTime());
+        intent.putExtra("url", queue.getPictureUrl());
+        intent.putExtra("tableNo", queue.getTableNo());
+        startActivity(intent);
     }
 
     private Queue makeQueue(Map<String, Object> queueMap) {
