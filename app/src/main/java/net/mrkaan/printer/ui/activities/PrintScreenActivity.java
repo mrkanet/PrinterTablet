@@ -30,7 +30,7 @@ import java.util.Map;
 public class PrintScreenActivity extends AppCompatActivity {
 
     private FirebaseAnalytics mFirebaseAnalytics;
-    public final String ACTION_USB_PERMISSION = "com.example.arduniounotestj.USB_PERMISSION";
+    public final String ACTION_USB_PERMISSION = "net.mrkaan.printer.USB_PERMISSION";
     Button startButton, sendButton, clearButton, stopButton;
     TextView textView, textViewDebug;
     EditText editText;
