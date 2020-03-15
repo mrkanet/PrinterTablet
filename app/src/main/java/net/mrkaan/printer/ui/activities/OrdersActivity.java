@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
+import static java.lang.Math.abs;
+
 public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter.OnOrderSelectedListener {
     //static number definitions
     //private static final String TAG = "QueueActivity";
@@ -67,7 +69,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
     @Override
     public void onStart() {
         super.onStart();
-       // Start sign in if necessary
+        // Start sign in if necessary
         if (shouldStartSignIn()) {
             startSignIn();
             return;
@@ -75,7 +77,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         // Apply filters
         //we have no filter
         //onFilter(mViewModel.getFilters());
-        if(vOrdersVPAdapter != null) vOrdersVPAdapter.startListening();
+        if (vOrdersVPAdapter != null) vOrdersVPAdapter.startListening();
     }
 
     private void startSignIn() {
@@ -123,15 +125,16 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
             }
         };
 
-        vOrdersRecycler.setLayoutManager(new GridLayoutManager(getApplicationContext(),3));
+        vOrdersRecycler.setLayoutManager(new GridLayoutManager(getApplicationContext(), 3));
         vOrdersRecycler.setAdapter(vOrdersVPAdapter);
     }
 
     @Override
     public void onOrderSelected(DocumentSnapshot order) {
         //burada arduino ve print işlemleri yapılacak
-        Queue queue = makeQueue((Map<String, Object>) order.getData());
-        Toast.makeText(getApplicationContext(), String.valueOf(queue.getUserId()), Toast.LENGTH_LONG).show();
+        Queue queue = makeQueue(Objects.requireNonNull(order.getData()));
+        //Toast.makeText(getApplicationContext(), String.valueOf(queue.getUserId()), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(),queue.getPictureUrl(),Toast.LENGTH_SHORT).show();
     }
 
     private Queue makeQueue(Map<String, Object> queueMap) {
@@ -141,12 +144,12 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         queue.setUserId(Integer.parseInt(Objects.requireNonNull(queueMap.get("userId")).toString()));
 
         queue.setInCafe(Boolean.valueOf(Objects.requireNonNull(queueMap.get("inCafe")).toString()));
-        queue.setState(Boolean.getBoolean(Objects.requireNonNull(queueMap.get("orderId")).toString()));
+        queue.setState(Boolean.getBoolean(Objects.requireNonNull(queueMap.get("state")).toString()));
 
-        queue.setTableNo(Objects.requireNonNull(queueMap.get("orderId")).toString());
-        queue.setPictureUrl(Objects.requireNonNull(queueMap.get("orderId")).toString());
+        queue.setTableNo(Objects.requireNonNull(queueMap.get("tableNo")).toString());
+        queue.setPictureUrl(Objects.requireNonNull(queueMap.get("pictureUrl")).toString());
 
-//            queue.setTime(Long.parseLong(Objects.requireNonNull(queueMap.get("time")).toString()));
+        queue.setTime(Long.parseLong(Objects.requireNonNull(queueMap.get("time")).toString()));
 
         return queue;
     }
@@ -155,11 +158,10 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         Location location = new Location("");
         location.setLatitude(123123);
         location.setLongitude(343123);
-        String url = "https://storage.googleapis.com/firestorequickstarts.appspot.com/food_1.png";
+        String url = "https://i.imgur.com/hueoozZ.jpg";
         //Date time = new Date("2");
         Random random = new Random();
-        return new Queue(11, 12, location, true, url, true,
-                random.nextLong(), "B12", 13);
+        return new Queue(11, 12, location, true, url, true, abs(random.nextLong()), "B23", abs(random.nextInt() % 100));
 
     }
 

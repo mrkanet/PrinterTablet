@@ -1,11 +1,15 @@
 package net.mrkaan.printer.adapter;
 
+import android.content.Context;
 import android.content.res.Resources;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,7 +36,7 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
 
     private OnOrderSelectedListener listener;
 
-    public OrdersVPAdapter(Query query, OnOrderSelectedListener listener) {
+    protected OrdersVPAdapter(Query query, OnOrderSelectedListener listener) {
         super(query);
         this.listener = listener;
     }
@@ -55,7 +59,7 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
         TextView inCafe;
         TextView tableNo;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             orderImage = itemView.findViewById(R.id.order_image);
             orderId = itemView.findViewById(R.id.order_id);
@@ -63,20 +67,24 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
             tableNo = itemView.findViewById(R.id.table_no);
         }
 
-        public void bind(final DocumentSnapshot snapshot,
-                         final OnOrderSelectedListener listener) {
+        void bind(final DocumentSnapshot snapshot,
+                  final OnOrderSelectedListener listener) {
             Map<String, Object> queueMap = snapshot.getData();
+            assert queueMap != null;
             Queue queue = makeQueue(queueMap);
 
             //load image
-            /*
-            Glide.with(orderImage.getContext())
-                    .load(queue.getPictureUrl())
-                    .into(orderImage);
+            Picasso.Builder builder = new Picasso.Builder(orderImage.getContext());
+            builder.listener((picasso, uri, exception) -> {
+                Toast.makeText(orderImage.getContext(), exception.getMessage(), Toast.LENGTH_SHORT).show();
+                //Log.e("picasso problem",exception.getMessage());
+                //Log.e("picasso uri", uri.toString());
+            });
+            //Log.e("pic url", queue.getPictureUrl());
+            Uri uri = Uri.parse(queue.getPictureUrl());
+            builder.build().load(uri).into(orderImage);
 
-             */
-            Picasso.get().load(queue.getPictureUrl()).resize(110, 110).into(orderImage);
-            orderId.setText("" + queue.getOrderId());
+            orderId.setText(String.valueOf(queue.getOrderId()));
             if (queue.getInCafe()) {
                 inCafe.setText(R.string.yes);
                 tableNo.setText(queue.getTableNo());
@@ -100,10 +108,10 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
             queue.setInCafe(Boolean.valueOf(Objects.requireNonNull(queueMap.get("inCafe")).toString()));
             queue.setState(Boolean.getBoolean(Objects.requireNonNull(queueMap.get("orderId")).toString()));
 
-            queue.setTableNo(Objects.requireNonNull(queueMap.get("orderId")).toString());
-            queue.setPictureUrl(Objects.requireNonNull(queueMap.get("orderId")).toString());
+            queue.setTableNo(Objects.requireNonNull(queueMap.get("tableNo")).toString());
+            queue.setPictureUrl(Objects.requireNonNull(queueMap.get("pictureUrl")).toString());
 
-//            queue.setTime(Long.parseLong(Objects.requireNonNull(queueMap.get("time")).toString()));
+            queue.setTime(Long.parseLong(Objects.requireNonNull(queueMap.get("time")).toString()));
 
             return queue;
         }

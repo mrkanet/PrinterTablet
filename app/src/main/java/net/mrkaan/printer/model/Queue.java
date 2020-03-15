@@ -14,13 +14,7 @@ class Response {
 }
 
 public class Queue {
-    public int getOrderId() {
-        return orderId;
-    }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
 
     private int orderId, cafeId, userId;
     private Location geoLocation;
@@ -28,6 +22,14 @@ public class Queue {
     private Boolean state, inCafe;
     //private Date time;
     private Long time;
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
 
     public int getCafeId() {
         return cafeId;
