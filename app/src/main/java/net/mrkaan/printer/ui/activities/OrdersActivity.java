@@ -74,12 +74,15 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         //we have no filter
         //onFilter(mViewModel.getFilters());
         if (vOrdersVPAdapter != null) vOrdersVPAdapter.startListening();
+
     }
 
+
+
     private void initFirestore() {
-        vQuery = vFirestore.collection("orders")
-                .orderBy("time", Query.Direction.DESCENDING)
-                .limit(LIMIT);
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        vQuery = vFirestore.collection("orders").whereEqualTo("cafeId", userId).whereEqualTo("state", true);
+        //vQuery = vQuery.orderBy("time", Query.Direction.DESCENDING).limit(LIMIT);
     }
 
     private void initRecyclerView() {
@@ -111,7 +114,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         Queue queue = makeQueue(Objects.requireNonNull(order.getData()));
 
         Intent intent = new Intent(getApplicationContext(), OrderPreviewActivity.class);
-        intent.putExtra("orderId",queue.getOrderId());
+        intent.putExtra("orderId", queue.getOrderId());
         intent.putExtra("userId", queue.getUserId());
         intent.putExtra("time", queue.getTime());
         intent.putExtra("url", queue.getPictureUrl());
@@ -122,7 +125,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
     private Queue makeQueue(Map<String, Object> queueMap) {
         Queue queue = new Queue();
         queue.setOrderId(Integer.parseInt(Objects.requireNonNull(queueMap.get("orderId")).toString()));
-        queue.setCafeId(Integer.parseInt(Objects.requireNonNull(queueMap.get("cafeId")).toString()));
+        queue.setCafeId(Objects.requireNonNull(queueMap.get("cafeId")).toString());
         queue.setUserId(Integer.parseInt(Objects.requireNonNull(queueMap.get("userId")).toString()));
 
         queue.setInCafe(Boolean.valueOf(Objects.requireNonNull(queueMap.get("inCafe")).toString()));
@@ -143,7 +146,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         String url = "https://i.imgur.com/hueoozZ.jpg";
         //Date time = new Date("2");
         Random random = new Random();
-        return new Queue(11, 12, location, true, url, true, abs(random.nextLong()), "B23", abs(random.nextInt() % 100));
+        return new Queue(11, FirebaseAuth.getInstance().getCurrentUser().getUid(), location, true, url, true, abs(random.nextLong()), "B23", abs(random.nextInt() % 100));
 
     }
 
