@@ -1,17 +1,23 @@
 package net.mrkaan.printer.model;
 
 
-import android.location.Location;
-
-
 import com.firebase.geofire.GeoLocation;
 
-import java.util.List;
 
 public class Cafe {
     private GeoLocation location;
-    private String cafeId, name, phone, email;
-    private Response queue;
+    private String cafeId, name, phone, email, username;
+    private Response queue, queueOk, queueCancelled;
+    private Boolean state;
+
+    public Response getQueueCancelled() {
+        return queueCancelled;
+    }
+
+    public void setQueueCancelled(Response queueCancelled) {
+        this.queueCancelled = queueCancelled;
+    }
+
 
     public Response getQueueOk() {
         return queueOk;
@@ -21,8 +27,6 @@ public class Cafe {
         this.queueOk = queueOk;
     }
 
-    private Response queueOk;
-    private Boolean state;
 
     public String getCafeId() {
         return cafeId;
@@ -65,7 +69,6 @@ public class Cafe {
     }
 
 
-
     public Response getQueue() {
         return queue;
     }
@@ -83,6 +86,7 @@ public class Cafe {
     }
 
     public Cafe(
+            String username,
             String cafeId,
             String email,
             GeoLocation location,
@@ -90,6 +94,7 @@ public class Cafe {
             String phone,
             Response queue,
             Response queueOk,
+            Response queueCancelled,
             Boolean state) {
         setCafeId(cafeId);
         setEmail(email);
@@ -99,7 +104,16 @@ public class Cafe {
         setQueue(queue);
         setState(state);
         setQueueOk(queueOk);
+        setUsername(username);
+        setQueueCancelled(queueCancelled);
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }
 

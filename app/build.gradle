@@ -11,6 +11,9 @@ android {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
         }
+        packagingOptions {
+            exclude 'META-INF/rxjava.properties'
+        }
     }
 
     defaultConfig {
@@ -60,8 +63,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
 
     //glide image downloading and caching
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'org.jetbrains:annotations:15.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
+
 }

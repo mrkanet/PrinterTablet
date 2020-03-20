@@ -1,9 +1,6 @@
 package net.mrkaan.printer.adapter;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +11,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
@@ -91,7 +87,6 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
             }
 
             itemView.setOnClickListener(v -> {
-                //burada işlemler başlatılacak
                 if (listener != null) {
                     listener.onOrderSelected(snapshot);
                 }
@@ -102,7 +97,7 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
         private Queue makeQueue(Map<String, Object> queueMap) {
             Queue queue = new Queue();
             queue.setOrderId(Integer.parseInt(Objects.requireNonNull(queueMap.get("orderId")).toString()));
-            queue.setCafeId(Integer.parseInt(Objects.requireNonNull(queueMap.get("cafeId")).toString()));
+            queue.setCafeId(Objects.requireNonNull(queueMap.get("cafeId")).toString());
             queue.setUserId(Integer.parseInt(Objects.requireNonNull(queueMap.get("userId")).toString()));
 
             queue.setInCafe(Boolean.valueOf(Objects.requireNonNull(queueMap.get("inCafe")).toString()));

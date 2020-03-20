@@ -15,9 +15,9 @@ class Response {
 public class Queue {
 
 
-    private int orderId, cafeId, userId;
+    private int orderId, userId;
     private Location geoLocation;
-    private String pictureUrl, tableNo;
+    private String pictureUrl, tableNo,cafeId;
     private Boolean state, inCafe;
     //private Date time;
     private Long time;
@@ -31,11 +31,11 @@ public class Queue {
         this.orderId = orderId;
     }
 
-    public int getCafeId() {
+    public String getCafeId() {
         return cafeId;
     }
 
-    public void setCafeId(int cafeId) {
+    public void setCafeId(String cafeId) {
         this.cafeId = cafeId;
     }
 
@@ -100,7 +100,7 @@ public class Queue {
 
     public Queue(
             int orderId,
-            int cafeId,
+            String cafeId,
             Location geoLocation,
             Boolean inCafe,
             String pictureUrl,
