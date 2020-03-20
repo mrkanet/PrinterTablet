@@ -2,9 +2,7 @@ package net.mrkaan.printer;
 
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -13,42 +11,35 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import net.mrkaan.printer.model.Cafe;
+import net.mrkaan.printer.model.Queue;
 import net.mrkaan.printer.ui.activities.MyActivity;
 import net.mrkaan.printer.ui.activities.OrdersActivity;
 import net.mrkaan.printer.ui.activities.PrintScreenActivity;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -73,17 +64,27 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_arduino).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), PrintScreenActivity.class)));
         findViewById(R.id.btn_printer).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), MyActivity.class)));
         findViewById(R.id.btn_orders).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), OrdersActivity.class)));
+        findViewById(R.id.btn_sign_out).setOnClickListener(v -> {
+            AuthUI.getInstance().signOut(getApplicationContext());
+            Toast.makeText(getApplicationContext(), "Çıkış başarılı", Toast.LENGTH_LONG).show();
+            finish();
+        });
+
+        if (shouldStartSignIn()) {
+            startSignIn();
+            isSignIn = true;
+        }
+        try {
+            String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
+            Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
+            setCafe(vLocation);
+        } catch (Exception e) {
+            isSignIn = false;
+        }
 
     }
 
-    /*
-        @Override
-        protected void onStart() {
-            super.onStart();
-            // Start sign in if necessary
 
-        }
-    */
     //sign in activity
     private void startSignIn() {
         // Sign in with FirebaseUI
@@ -96,6 +97,13 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, RC_SIGN_IN);
         setSignIn(true);
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
+        Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
     }
 
     private boolean shouldStartSignIn() {
@@ -115,31 +123,41 @@ public class MainActivity extends AppCompatActivity {
         Query query = reference.whereEqualTo("cafeId", user.getUid());
         query.addSnapshotListener((queryDocumentSnapshots, e) -> {
             try {
+                assert queryDocumentSnapshots != null;
                 if (queryDocumentSnapshots.isEmpty()) {
-                    String userPhone = "";
-                    assert user != null;
-                    Cafe cafe = new Cafe(user.getUid(), user.getEmail(), vLocation, user.getDisplayName(), userPhone, null, null, true);
-                    reference.add(cafe)
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getApplicationContext(), "Kullanıcı eklenemedi, bir hata var!", Toast.LENGTH_LONG).show();
-                                }
-                            })
-                            .addOnSuccessListener(documentReference -> {
-                                Toast.makeText(getApplicationContext(), "Kullanıcı ekleme başarılı.", Toast.LENGTH_LONG).show();
-                            });
-                }else {
-                    Toast.makeText(getApplicationContext(), "Hoşgeldin "+user.getDisplayName(), Toast.LENGTH_LONG).show();
+                    EditText username, phone, name;
+                    username = findViewById(R.id.username);
+                    phone = findViewById(R.id.phone_num);
+                    name = findViewById(R.id.name);
+
+                    //signubutton
+                    findViewById(R.id.btn_signup).setOnClickListener(v -> {
+                        Query query1 = reference.whereEqualTo("username", username.getText().toString());
+                        query1.addSnapshotListener((queryDocumentSnapshots1, e12) -> {
+
+                            if (!queryDocumentSnapshots1.isEmpty()) {
+                                Toast.makeText(getApplicationContext(), "Kullanıcı adı daha önce alınmış", Toast.LENGTH_LONG).show();
+                            } else {
+                                Cafe cafe = new Cafe(username.getText().toString(), user.getUid(), user.getEmail(), vLocation, name.getText().toString(), phone.getText().toString(), null, null, null, true);
+
+                                reference.add(cafe)
+                                        .addOnFailureListener(e121 -> Toast.makeText(getApplicationContext(), "Kullanıcı eklenemedi, bir hata var!", Toast.LENGTH_LONG).show())
+                                        .addOnSuccessListener(documentReference -> {
+                                            Toast.makeText(getApplicationContext(), "Kullanıcı ekleme başarılı.", Toast.LENGTH_LONG).show();
+                                        });
+
+                            }
+                        });
+                    });
+
+                } else {
+                    // Toast.makeText(getApplicationContext(), "Hoşgeldin " + user.getDisplayName(), Toast.LENGTH_LONG).show();
 
                 }
-            }catch (Exception e1){
-                Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+            } catch (Exception e1) {
+                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-        //          nothing
-        //else:
-
     }
 
     @Override
@@ -151,52 +169,8 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1200);
         }
-        if (shouldStartSignIn()) {
-            startSignIn();
-            isSignIn = true;
-        }
-        try {
-            String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getUid();
-            Toast.makeText(this, "Hoşgeldiniz", Toast.LENGTH_SHORT).show();
-            setCafe(vLocation);
-        } catch (Exception e) {
-            isSignIn = false;
-        }
+
     }
-/*
-    private void setvLocation() {
-        Context context = this;
-
-
-        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        boolean gps_enabled = false;
-        boolean network_enabled = false;
-
-        try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        } catch (Exception ignored) {
-        }
-
-        try {
-            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } catch (Exception ignored) {
-        }
-
-        if (!gps_enabled && !network_enabled) {
-            // notify user
-            new AlertDialog.Builder(context)
-                    .setMessage("GPS etkin değil lütfen etkinleştirin")
-                    .setPositiveButton("Konum ayarlarını açın", (paramDialogInterface, paramInt) -> context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
-                    .setNegativeButton("vazgeç", null);
-
-        } else if (!network_enabled) {
-            vLocation = vManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        } else {
-            vLocation = vManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        }
-    }
-
- */
 
 
     public static boolean isLocationEnabled(Context context) {
@@ -295,59 +269,3 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-
-
-
-
-
-
-
-
-/*
-        if (location()) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            vManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
-                @Override
-                public void onLocationChanged(Location location) {
-
-                }
-
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                }
-
-                @Override
-                public void onProviderEnabled(String provider) {
-
-                }
-
-                @Override
-                public void onProviderDisabled(String provider) {
-
-                }
-            });
-        } else {
-            new AlertDialog.Builder(this)
-                    .setTitle("Konum gerekli!")
-                    .setMessage("Konumunuz kafenize çekeceğiniz müşteriler için gereklidir. Konumunuzu paylaşmak istemiyorsanız konumunuzu bizimle enlem ve boylam değerlerini girerek paylaşabilirsiniz.")
-                    .setPositiveButton("Tamam, öyle yapalım", (dialog, which) -> findViewById(R.id.container_location).setVisibility(View.VISIBLE))
-                    .setNegativeButton("Gerek yok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .create()
-                    .show();
-        }
-*/
