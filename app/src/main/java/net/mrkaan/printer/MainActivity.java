@@ -9,14 +9,13 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -25,21 +24,18 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import net.mrkaan.printer.model.Cafe;
-import net.mrkaan.printer.model.Queue;
 import net.mrkaan.printer.ui.activities.MyActivity;
 import net.mrkaan.printer.ui.activities.OrdersActivity;
 import net.mrkaan.printer.ui.activities.PrintScreenActivity;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,9 +45,9 @@ public class MainActivity extends AppCompatActivity {
     public LocationManager locationManager;
     public Criteria criteria;
     public String bestProvider;
-    private GeoLocation vLocation;
     private FirebaseFirestore vFirestore;
     private boolean isSignIn = false;
+    Uri resultUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //setvLocation();
         vFirestore = FirebaseFirestore.getInstance();
-        vLocation = getLocation();
+        GeoLocation vLocation = getLocation();
 
         findViewById(R.id.btn_arduino).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), PrintScreenActivity.class)));
         findViewById(R.id.btn_printer).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), MyActivity.class)));
@@ -69,6 +65,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Çıkış başarılı", Toast.LENGTH_LONG).show();
             finish();
         });
+        findViewById(R.id.btn_img).setOnClickListener(v -> CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setCropShape(CropImageView.CropShape.OVAL)
+                .setFixAspectRatio(true)
+                .start(this));
 
         if (shouldStartSignIn()) {
             startSignIn();
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             isSignIn = false;
         }
+
 
     }
 
@@ -100,11 +102,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
-        Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                resultUri = result.getUri();
+
+
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Log.e("Crop Error", Objects.requireNonNull(result.getError().getMessage()));
+            }
+        } else if (requestCode == 9001) {
+            String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
+            Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "İzinsiz Erişim", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     private boolean shouldStartSignIn() {
         return (!isSignIn && FirebaseAuth.getInstance().getCurrentUser() == null);
@@ -120,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseAuth auth = new FirebaseAuth(vFirestore.getApp());
         FirebaseUser user = auth.getCurrentUser();
         //if user.getUid() in users table then:
+        assert user != null;
         Query query = reference.whereEqualTo("cafeId", user.getUid());
         query.addSnapshotListener((queryDocumentSnapshots, e) -> {
             try {
@@ -135,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
                         Query query1 = reference.whereEqualTo("username", username.getText().toString());
                         query1.addSnapshotListener((queryDocumentSnapshots1, e12) -> {
 
+                            assert queryDocumentSnapshots1 != null;
                             if (!queryDocumentSnapshots1.isEmpty()) {
                                 Toast.makeText(getApplicationContext(), "Kullanıcı adı daha önce alınmış", Toast.LENGTH_LONG).show();
                             } else {
@@ -142,19 +162,19 @@ public class MainActivity extends AppCompatActivity {
 
                                 reference.add(cafe)
                                         .addOnFailureListener(e121 -> Toast.makeText(getApplicationContext(), "Kullanıcı eklenemedi, bir hata var!", Toast.LENGTH_LONG).show())
-                                        .addOnSuccessListener(documentReference -> {
-                                            Toast.makeText(getApplicationContext(), "Kullanıcı ekleme başarılı.", Toast.LENGTH_LONG).show();
-                                        });
+                                        .addOnSuccessListener(documentReference -> Toast.makeText(getApplicationContext(), "Kullanıcı ekleme başarılı.", Toast.LENGTH_LONG).show());
 
                             }
                         });
                     });
 
-                } else {
+                }
+                /*else {
                     // Toast.makeText(getApplicationContext(), "Hoşgeldin " + user.getDisplayName(), Toast.LENGTH_LONG).show();
 
-                }
+                }*/
             } catch (Exception e1) {
+                assert e != null;
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

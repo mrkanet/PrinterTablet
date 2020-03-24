@@ -1,7 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
     repositories {
         mavenCentral()
         google()
@@ -26,13 +25,23 @@ buildscript {
 }
 
 allprojects {
+
     repositories {
         google()
         jcenter()
-        
+        maven { url 'https://jitpack.io' }
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+ext {
+    compileSdkVersion = 28
+    buildToolsVersion = '28.0.3'
+    androidXLibraryVersion = '1.1.0'
+
+    PUBLISH_GROUP_ID = 'net.mrkaan.cropping'
+    PUBLISH_ARTIFACT_ID = 'android-image-cropper'
+    PUBLISH_VERSION = '2.8.0'
 }

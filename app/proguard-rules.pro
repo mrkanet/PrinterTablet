@@ -35,3 +35,4 @@
 -keepclasseswithmembers class * {
     native <methods>;
 }
+-keep class androidx.appcompat.widget.** { *; }
