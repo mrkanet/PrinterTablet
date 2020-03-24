@@ -5,6 +5,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -30,6 +32,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import net.mrkaan.printer.model.Cafe;
+import net.mrkaan.printer.photoeditor.EditImageActivity;
 import net.mrkaan.printer.ui.activities.MyActivity;
 import net.mrkaan.printer.ui.activities.OrdersActivity;
 import net.mrkaan.printer.ui.activities.PrintScreenActivity;
@@ -40,6 +43,7 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 9001;
+    private static final int PHOTO_OK = 1998;
     public double latitude;
     public double longitude;
     public LocationManager locationManager;
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     public String bestProvider;
     private FirebaseFirestore vFirestore;
     private boolean isSignIn = false;
-    Uri resultUri;
+    Uri resultUri, printUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +69,20 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Çıkış başarılı", Toast.LENGTH_LONG).show();
             finish();
         });
-        findViewById(R.id.btn_img).setOnClickListener(v -> CropImage.activity()
-                .setGuidelines(CropImageView.Guidelines.ON)
-                .setCropShape(CropImageView.CropShape.OVAL)
-                .setFixAspectRatio(true)
-                .start(this));
+        findViewById(R.id.btn_img).setOnClickListener(v ->
+                CropImage.activity()
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .setCropShape(CropImageView.CropShape.OVAL)
+                        .setMultiTouchEnabled(false)
+                        .setBackgroundColor(R.color.green_color_picker)
+                        .setScaleType(CropImageView.ScaleType.CENTER)
+                        .setFixAspectRatio(true)
+
+                        .setInitialCropWindowPaddingRatio(0)
+                        .setMinCropWindowSize(100,100)
+                        .setMaxZoom(8)
+
+                        .start(this));
 
         if (shouldStartSignIn()) {
             startSignIn();
@@ -109,15 +122,24 @@ public class MainActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 resultUri = result.getUri();
-
-
+                Intent i = new Intent(this, EditImageActivity.class);
+                i.putExtra("image_uri", resultUri.toString());
+                startActivityForResult(i, PHOTO_OK);
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Log.e("Crop Error", Objects.requireNonNull(result.getError().getMessage()));
             }
-        } else if (requestCode == 9001) {
+        } else if (requestCode == RC_SIGN_IN) {
             String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
             Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
+        } else if (requestCode == PHOTO_OK) {
+            try {
+                String s = data.getStringExtra("ok_photo_uri");
+                printUri = Uri.parse(s);
+            } catch (NullPointerException e) {
+                Log.e("Uri did not come", e.getMessage());
+            }
+            //printjobs
         } else {
             Toast.makeText(this, "İzinsiz Erişim", Toast.LENGTH_SHORT).show();
         }
