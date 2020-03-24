@@ -1,0 +1,21 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion rootProject.compileSdkVersion
+        versionCode 1
+        versionName PUBLISH_VERSION
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    api project(':cropper')
+    api "androidx.appcompat:appcompat:$androidXLibraryVersion"
+}
