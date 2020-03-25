@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -18,6 +17,7 @@ import android.view.View;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,8 +42,10 @@ import net.mrkaan.printer.R;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
+import ja.burhanrashid52.photoeditor.OnSaveBitmap;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
@@ -74,6 +76,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private ConstraintLayout mRootView;
     private ConstraintSet mConstraintSet = new ConstraintSet();
     private boolean mIsFilterVisible;
+    private Bitmap bm, vm;
     Uri imageUri;
     @Nullable
     @VisibleForTesting
@@ -86,17 +89,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         makeFullScreen();
         setContentView(R.layout.activity_edit_image);
 
-        Intent i = getIntent();
-        String s = i.getStringExtra("image_uri");
-        ImageView iv = new ImageView(getApplicationContext());
-        iv.setImageURI(Uri.parse(s));
-        Bitmap bm =((BitmapDrawable)iv.getDrawable()).getBitmap() ;
-        bm = CropImage.toOvalBitmap(bm);
+
         //imageUri = Uri.parse(s);
+        setImage();
 
-        initViews();
-
-        mPhotoEditorView.getSource().setImageBitmap(bm);
         handleIntentImage(mPhotoEditorView.getSource());
 
         mWonderFont = Typeface.createFromAsset(getAssets(), "beyond_wonderland.ttf");
@@ -125,11 +121,50 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 //.setDefaultTextTypeface(mTextRobotoTf)
                 //.setDefaultEmojiTypeface(mEmojiTypeFace)
                 .build(); // build photo editor sdk
-
+        sepia();
         mPhotoEditor.setOnPhotoEditorListener(this);
 
         //Set Image Dynamically
         // mPhotoEditorView.getSource().setImageResource(R.drawable.color_palette);
+    }
+
+    private void setImage() {
+
+        initViews();
+        Intent i = getIntent();
+        String s = i.getStringExtra("image_uri");
+        ImageView iv = new ImageView(getApplicationContext());
+        iv.setImageURI(Uri.parse(s));
+        bm = ((BitmapDrawable) iv.getDrawable()).getBitmap();
+        bm = CropImage.toOvalBitmap(bm);
+
+        mPhotoEditorView.getSource().setImageBitmap(bm);
+        sepia();
+    }
+
+    @SuppressLint("ResourceAsColor")
+    private void sepia() {
+        if (mPhotoEditor != null) {
+            mPhotoEditor.setFilterEffect(PhotoFilter.GRAY_SCALE);
+
+            mPhotoEditor.saveAsBitmap(new OnSaveBitmap() {
+                @Override
+                public void onBitmapReady(Bitmap saveBitmap) {
+                    bm = CropImage.toOvalBitmap(saveBitmap);
+                    mPhotoEditorView.getSource().setImageBitmap(bm);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+
+                }
+            });
+            //mPhotoEditorView.getSource();
+            //Drawable d = mPhotoEditorView.get
+            //vm = ((BitmapDrawable) d).getBitmap();
+
+
+        }
     }
 
     private void handleIntentImage(ImageView source) {
@@ -278,11 +313,14 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private void saveImage() {
         if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...");
-            File file = new File(Environment.getExternalStorageDirectory()
-                    + File.separator + ""
+            File file = new File(Environment.getExternalStorageDirectory()+File.separator+"mrk.printer"+File.separator);
+            file.mkdirs();
+            file = new File(Environment.getExternalStorageDirectory()
+                    + File.separator + "mrk.printer" + File.separator + ""
                     + System.currentTimeMillis() + ".png");
             try {
                 file.createNewFile();
+
 
                 SaveSettings saveSettings = new SaveSettings.Builder()
                         .setClearViewsEnabled(true)
