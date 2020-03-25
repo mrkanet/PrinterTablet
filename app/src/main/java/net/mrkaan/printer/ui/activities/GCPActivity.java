@@ -1,9 +1,11 @@
 package net.mrkaan.printer.ui.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -29,9 +31,7 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.Response;
 
 import net.mrkaan.printer.Constants;
 import net.mrkaan.printer.DebugLog;
@@ -43,6 +43,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Objects;
 
 public class GCPActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private GoogleApiClient mGoogleApiClient;
@@ -56,6 +57,7 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
     private String externalStorageDirectory;
     private String mPrinterId;
     private File mPdfFile;
+    public static Bitmap imgBm;
 
 
     @Override
@@ -85,14 +87,14 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
             public void onClick(View view) {
                 DebugLog.write(mPdfFile.getAbsolutePath());
 
-                printPdf(mPdfFile.getAbsolutePath(), "2b8f0172-c74c-4cd6-c033-f687c4f4d22d");
+                printPdf(mPdfFile.getAbsolutePath(), getResources().getString(R.string.gcp_id));
             }
         });
         findViewById(R.id.create_pdf_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 DebugLog.write();
-               createImage();
+                createImage();
             }
         });
         txt = findViewById(R.id.textView);
@@ -166,20 +168,17 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                 .setBodyParameter("grant_type", "authorization_code")
                 .asString()
                 .withResponse()
-                .setCallback(new FutureCallback<Response<String>>() {
-                    @Override
-                    public void onCompleted(Exception e, Response<String> result) {
-                        DebugLog.write("result: " + result.getResult());
-                        if (e == null) {
-                            try {
-                                JSONObject json = new JSONObject(result.getResult());
-                                getPrinters(json.getString("access_token"));
-                            } catch (JSONException e1) {
-                                e1.printStackTrace();
-                            }
-                        } else {
-                            DebugLog.write("error");
+                .setCallback((e, result) -> {
+                    DebugLog.write("result: " + result.getResult());
+                    if (e == null) {
+                        try {
+                            JSONObject json = new JSONObject(result.getResult());
+                            getPrinters(json.getString("access_token"));
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
                         }
+                    } else {
+                        DebugLog.write("error");
                     }
                 });
     }
@@ -193,17 +192,14 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                 .addHeader("Authorization", "Bearer " + token)
                 .asString()
                 .withResponse()
-                .setCallback(new FutureCallback<Response<String>>() {
-                    @Override
-                    public void onCompleted(Exception e, Response<String> result) {
-                        DebugLog.write("finished " + result.getHeaders().code() + ": " +
-                                result.getResult());
-                        mPrinterId =  result.getResult();
-                        if (e == null) {
-                            DebugLog.write("nice");
-                        } else {
-                            DebugLog.write("error");
-                        }
+                .setCallback((e, result) -> {
+                    DebugLog.write("finished " + result.getHeaders().code() + ": " +
+                            result.getResult());
+                    mPrinterId = result.getResult();
+                    if (e == null) {
+                        DebugLog.write("nice");
+                    } else {
+                        DebugLog.write("error");
                     }
                 });
     }
@@ -215,27 +211,24 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                 .load("POST", url)
                 .addHeader("Authorization", "Bearer " + YOUR_ACCESS_TOKEN)
                 .setMultipartParameter("printerid", printerId)
-                .setMultipartParameter("title", "print test")
+                .setMultipartParameter("title", "mrk")// buraya işlem başlığı yazılıyor
                 .setMultipartParameter("ticket", getTicket())
                 .setMultipartFile("content", "application/pdf", new File(pdfPath))
                 .asString()
                 .withResponse()
-                .setCallback(new FutureCallback<Response<String>>() {
-                    @Override
-                    public void onCompleted(Exception e, Response<String> result) {
-                        if (e == null) {
-                            DebugLog.write("PRINTTT CODE: " + result.getHeaders().code() +
-                                    ", RESPONSE: " + result.getResult());
-                            Json j = Json.read(result.getResult());
-                            if (j.at("success").asBoolean()) {
-                                DebugLog.write("Success");
-                            } else {
-                                DebugLog.write("ERROR");
-                            }
+                .setCallback((e, result) -> {
+                    if (e == null) {
+                        DebugLog.write("PRINTTT CODE: " + result.getHeaders().code() +
+                                ", RESPONSE: " + result.getResult());
+                        Json j = Json.read(result.getResult());
+                        if (j.at("success").asBoolean()) {
+                            DebugLog.write("Success");
                         } else {
                             DebugLog.write("ERROR");
-                            DebugLog.write("" + e.toString());
                         }
+                    } else {
+                        DebugLog.write("ERROR");
+                        DebugLog.write("" + e.toString());
                     }
                 });
     }
@@ -285,50 +278,72 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                 new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         //Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.img);
+
         Document document = new Document(new Rectangle(595, 842), 0, 0, 0, 0);
         document.setPageSize(PageSize.A4);
         document.addCreationDate();
         document.addAuthor("Merhaba Android");
         document.addCreator("Mehaba Adroid 2");
+
         externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
         File fol = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER);
         mPdfFile = new File(fol, "sample3.pdf");
+/*
+        PdfDocument pdfDocument = new PdfDocument();
+        PdfDocument.PageInfo info = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+        PdfDocument.Page page = pdfDocument.startPage(info);
+
+        Canvas c = page.getCanvas();
+        Paint p = new Paint();
+        p.setColor(Color.parseColor("#FFFFFF"));
+        c.drawPaint(p);
+
+
+        Bitmap bm = Bitmap.createScaledBitmap(imgBm, imgBm.getWidth(), imgBm.getHeight(), true);
+        p.setColor(Color.BLUE);
+        float posBottomY = calculateAbsoluteBottomYPos(55.0f, 68.0f);
+        float posLeftX = calculateAbsoluteXPos(55.0f, 68.0f);
+        c.drawBitmap(bm, posLeftX, posBottomY, null);
+        pdfDocument.finishPage(page);
+*/
 
         try {
-           // URL url = new URL("https://i.picsum.photos/id/381/200/300.jpg?grayscale");
+            //URL url = new URL("https://i.picsum.photos/id/381/200/300.jpg?grayscale");
             PdfWriter.getInstance(document, new FileOutputStream(mPdfFile));
 
             document.open();
-           // document.add(new Paragraph("hello"));
+            //document.add(new Paragraph("hello"));
             Image image =  Image.getInstance(fol.getAbsolutePath()+"/kahve.png");
-          //  Image image = Image.getInstance(url);
+
+            //Image image = Image.getInstance(url);
             image.scaleAbsolute(calculateImageSize(68.0f), calculateImageSize(68.0f));
-          //  float y = PageSize.A4.getHeight() - image.getScaledHeight() - 50;
+            //float y = PageSize.A4.getHeight() - image.getScaledHeight() - 50;
             float posBottomY = calculateAbsoluteBottomYPos(55.0f,68.0f);
             float posLeftX = calculateAbsoluteXPos(55.0f,68.0f);
-            DebugLog.write(PageSize.A4.getHeight()+" - " +image.getScaledHeight() );
-            DebugLog.write("y:"+posBottomY);
-            DebugLog.write("x:"+posLeftX);
+            //DebugLog.write(PageSize.A4.getHeight()+" - " +image.getScaledHeight() );
+            DebugLog.write("y:" + posBottomY);
+            DebugLog.write("x:" + posLeftX);
             image.setAbsolutePosition(posLeftX, posBottomY);
             document.add(image);
             document.close();
             System.setProperty("http.agent", "Chrome");
         } catch (Exception e) {
+            Log.e("img_create", Objects.requireNonNull(e.getMessage()));
             e.printStackTrace();
         }
 
     }
 
-    private Float calculateImageSize(Float sensorDataMM){
+    private Float calculateImageSize(Float sensorDataMM) {
         return 2.8333f * sensorDataMM;
     }
 
-    private Float calculateAbsoluteXPos(Float centerPointXMM,Float sensorDataMM){
-        return (centerPointXMM*2.8333f)-(calculateImageSize(sensorDataMM)/2);
+    private Float calculateAbsoluteXPos(Float centerPointXMM, Float sensorDataMM) {
+        return (centerPointXMM * 2.8333f) - (calculateImageSize(sensorDataMM) / 2);
     }
 
-    private Float calculateAbsoluteBottomYPos(Float centerPointX,Float sensorDataMM){
-        return PageSize.A4.getHeight()-((centerPointX*2.8333f)+(calculateImageSize(sensorDataMM)/2));
+    private Float calculateAbsoluteBottomYPos(Float centerPointX, Float sensorDataMM) {
+        return PageSize.A4.getHeight() - ((centerPointX * 2.8333f) + (calculateImageSize(sensorDataMM) / 2));
     }
 
 }

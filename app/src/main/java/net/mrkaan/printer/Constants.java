@@ -18,5 +18,5 @@ public class Constants {
     public static final int RESULT_CODE_PRINTER_CONNECT_FAILED = 1002;
     public static final int REQUEST_CODE__ACCESS_COARSE_LOCATION = 1003;
     public static final int RESULT_CODE__ACCESS_COARSE_LOCATION = 1003;
-    public static final String CONTROLLER_PDF_FOLDER = "pdf";
+    public static final String CONTROLLER_PDF_FOLDER = "mrk.printer";
 }
