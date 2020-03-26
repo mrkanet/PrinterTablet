@@ -365,11 +365,12 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
         File fol = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER);
         mPdfFile = new File(fol, currentImgName+".pdf");
 
+
         try {
             PdfWriter.getInstance(document, new FileOutputStream(mPdfFile));
 
             document.open();
-            Image image = Image.getInstance(fol.getAbsolutePath() + "/kahve.png");
+            Image image = Image.getInstance(fol.getAbsolutePath() + "/"+currentImgName+".png");
 
 
             image.scaleAbsolute(calculateImageSize(cap), calculateImageSize(cap));

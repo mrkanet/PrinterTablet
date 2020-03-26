@@ -63,7 +63,7 @@ public class OrderPreviewActivity extends AppCompatActivity {
                 FileOutputStream out = new FileOutputStream(imageFile);
                 boolean t = Constants.bm.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
                 Toast.makeText(getApplicationContext(), String.valueOf(t), Toast.LENGTH_SHORT).show();
-                Constants.currentImgName = time + ".png";
+                Constants.currentImgName = time+"";
                 out.flush();
                 out.close();
                 // PNG is a lossless format, the compression factor (100) is ignored
