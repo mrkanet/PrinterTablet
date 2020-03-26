@@ -1,6 +1,8 @@
 package net.mrkaan.printer;
 
 
+import android.graphics.Bitmap;
+
 public class Constants {
     public static final String DEMO_PREFERENCES = "demo_preferences";
     public static final String CONTROLLER_WIFI_CONFIGURATION = "controller_wifi_configuration";
@@ -19,4 +21,11 @@ public class Constants {
     public static final int REQUEST_CODE__ACCESS_COARSE_LOCATION = 1003;
     public static final int RESULT_CODE__ACCESS_COARSE_LOCATION = 1003;
     public static final String CONTROLLER_PDF_FOLDER = "mrk.printer";
+    public static final int deviceVID = 0x1a86;
+    public static final String ACTION_USB_PERMISSION = "net.mrkaan.printer.USB_PERMISSION";
+
+    public static final long htomil = 10800000; //gmt+3 için zaman eklemesi
+    public static String currentImgName;
+    public static Bitmap bm;
+
 }

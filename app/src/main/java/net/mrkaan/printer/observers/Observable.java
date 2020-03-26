@@ -2,9 +2,9 @@ package net.mrkaan.printer.observers;
 
 
 public interface Observable {
-    public void notifyObserver(boolean bool);
-    public void attach(Observer observer);
-    public void detach(Observer observer);
-    public void notify(Object param);
-    public void updateProgress(int percentage);
+    void notifyObserver(boolean bool);
+    void attach(Observer observer);
+    void detach(Observer observer);
+    void notify(Object param);
+    void updateProgress(int percentage);
 }

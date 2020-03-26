@@ -41,7 +41,7 @@
                 android:id="@+id/order_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sipariş numarası: 123"
+                android:text="@string/order_num"
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
@@ -58,7 +58,7 @@
                 android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Kullanıcı adı: Hakan Çelik"
+                android:text="@string/user_name_lname"
                 android:textSize="18sp" />
         </LinearLayout>
 
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:text="Sipariş zamanı: 00:00:00"
+                android:text="@string/order_time"
                 android:textSize="18sp" />
 
             <TextView
@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:text="Masa numarası: B45"
+                android:text="@string/table_num"
                 android:textSize="18sp" />
         </LinearLayout>
 
@@ -103,20 +103,20 @@
             android:id="@+id/btnPrint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bastır" />
+            android:text="@string/print" />
 
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="İptal et" />
+            android:text="@string/cancel" />
 
         <Button
             android:id="@+id/btnGoBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Geri dön" />
+            android:text="@string/back" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

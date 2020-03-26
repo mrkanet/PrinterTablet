@@ -1,7 +1,7 @@
 package net.mrkaan.printer.services;
 
 public interface PrintFragmentCommunicator {
-    public void respondOnPrintComplete();
-    public void respondOnPrinterSelect();
-    public void respondOnPrinterSelectCancelled();
+    void respondOnPrintComplete();
+    void respondOnPrinterSelect();
+    void respondOnPrinterSelectCancelled();
 }

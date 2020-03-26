@@ -1,10 +1,16 @@
 package net.mrkaan.printer.ui.activities;
 
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -12,6 +18,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.felhr.usbserial.UsbSerialDevice;
+import com.felhr.usbserial.UsbSerialInterface;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -19,10 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -43,14 +48,20 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+
+import static net.mrkaan.printer.Constants.ACTION_USB_PERMISSION;
+import static net.mrkaan.printer.Constants.currentImgName;
 
 public class GCPActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private static final int REQUEST_SINGIN = 1;
-    private TextView txt;
+    private TextView txt, txtar, txtpdf;
     public static final String TAG = "mysupertag";
     public static final String URLBASE = "https://www.google.com/cloudprint/";
     private String YOUR_ACCESS_TOKEN;
@@ -58,11 +69,81 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
     private String mPrinterId;
     private File mPdfFile;
     public static Bitmap imgBm;
+    public Intent intentBefore;
 
+    public UsbManager usbManager;
+    UsbDevice device;
+    UsbSerialDevice serialPort;
+    UsbDeviceConnection connection;
+    ArrayList<Integer> dataList;
+    boolean two = false;
+    float cap = 0f;
+
+
+    //Defining a Callback which triggers whenever data is read.
+    UsbSerialInterface.UsbReadCallback mCallback = arg0 -> {
+        String data = new String(arg0);
+        if (Integer.parseInt(data) == 2) {
+            two = true;
+        } else if (two) {
+            if (dataList.size() < 10) {
+                dataList.add(Integer.parseInt(data));
+            } else {
+                two = false;
+                preparePdf();
+            }
+        }
+
+    };
+
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case ACTION_USB_PERMISSION:
+                    boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+                    if (granted) {
+                        DebugLog.write();
+                        connection = usbManager.openDevice(device);
+                        serialPort = UsbSerialDevice.createUsbSerialDevice(device, connection);
+                        if (serialPort != null) {
+                            if (serialPort.open()) { //Set Serial Connection Parameters.
+                                serialPort.setBaudRate(9600);
+                                serialPort.setDataBits(UsbSerialInterface.DATA_BITS_8);
+                                serialPort.setStopBits(UsbSerialInterface.STOP_BITS_1);
+                                serialPort.setParity(UsbSerialInterface.PARITY_NONE);
+                                serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
+                                serialPort.read(mCallback);
+
+
+                            } else {
+                                Log.d("SERIAL", "PORT NOT OPEN");
+                            }
+                        } else {
+                            Log.d("SERIAL", "PORT IS NULL");
+                        }
+                    } else {
+                        Log.d("SERIAL", "PERM NOT GRANTED");
+                    }
+                    break;
+
+                case UsbManager.ACTION_USB_DEVICE_ATTACHED:
+                    findArduino();
+                    break;
+
+                case UsbManager.ACTION_USB_DEVICE_DETACHED:
+                    stopConn();
+                    break;
+            }
+        }
+
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        intentBefore = getIntent();
         setContentView(R.layout.activity_g_c_p);
         mAuth = FirebaseAuth.getInstance();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -76,43 +157,44 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signIn();
-            }
-        });
-        findViewById(R.id.gcp_print_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DebugLog.write(mPdfFile.getAbsolutePath());
+        //sets up
+        signIn();
+        dataList = new ArrayList<>();
+        usbManager = (UsbManager) getSystemService(USB_SERVICE);
+        findViewById(R.id.gcp_print_button).setOnClickListener(view -> {
+            DebugLog.write(mPdfFile.getAbsolutePath());
 
-                printPdf(mPdfFile.getAbsolutePath(), getResources().getString(R.string.gcp_id));
-            }
+            printPdf(mPdfFile.getAbsolutePath(), getResources().getString(R.string.gcp_id));
         });
-        findViewById(R.id.create_pdf_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DebugLog.write();
-                createImage();
-            }
+        findViewById(R.id.create_pdf_button).setOnClickListener(view -> {
+            DebugLog.write();
+            createImage();
         });
-        txt = findViewById(R.id.textView);
+        txt = findViewById(R.id.txt_sign);
+        txtar = findViewById(R.id.txt_arduino);
+        txtpdf = findViewById(R.id.txt_pdf);
 
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    DebugLog.write("onAuthStateChanged:signed_in:" + user.getUid());
-                } else {
-                    // User is signed out
-                    DebugLog.write("onAuthStateChanged:signed_out");
-                }
-                // ...
+        //setted
+
+        mAuthListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                // User is signed in
+                DebugLog.write("onAuthStateChanged:signed_in:" + user.getUid());
+            } else {
+                // User is signed out
+                DebugLog.write("onAuthStateChanged:signed_out");
             }
+            // ...
         };
+
+
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(broadcastReceiver, filter);
     }
 
     @Override
@@ -138,23 +220,21 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
         DebugLog.write("firebaseAuthWithGoogle:" + acct.getId());
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        DebugLog.write("fsignInWithCredential:onComplete:" + task.isSuccessful());
+                .addOnCompleteListener(this, task -> {
+                    DebugLog.write("fsignInWithCredential:onComplete:" + task.isSuccessful());
 
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        FirebaseUser user = task.getResult().getUser();
-                        txt.setText(user.getDisplayName() + "\n" + user.getEmail());//todo
-                        if (!task.isSuccessful()) {
-                            DebugLog.write("fsignInWithCredential", task.getException());
+                    // If sign in fails, display a message to the user. If sign in succeeds
+                    // the auth state listener will be notified and logic to handle the
+                    // signed in user can be handled in the listener.
+                    FirebaseUser user = task.getResult().getUser();
+                    txt.setText(user.getDisplayName() + "\n" + user.getEmail());//todo
+                    if (!task.isSuccessful()) {
+                        DebugLog.write("fsignInWithCredential", task.getException());
 
-                        }
-                        getAccess(acct.getServerAuthCode());
                     }
+                    getAccess(acct.getServerAuthCode());
                 });
     }
 
@@ -274,10 +354,6 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
 
 
     private void createImage() {
-        StrictMode.ThreadPolicy policy =
-                new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-        //Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.img);
 
         Document document = new Document(new Rectangle(595, 842), 0, 0, 0, 0);
         document.setPageSize(PageSize.A4);
@@ -287,46 +363,25 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
 
         externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
         File fol = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER);
-        mPdfFile = new File(fol, "sample3.pdf");
-/*
-        PdfDocument pdfDocument = new PdfDocument();
-        PdfDocument.PageInfo info = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
-        PdfDocument.Page page = pdfDocument.startPage(info);
-
-        Canvas c = page.getCanvas();
-        Paint p = new Paint();
-        p.setColor(Color.parseColor("#FFFFFF"));
-        c.drawPaint(p);
-
-
-        Bitmap bm = Bitmap.createScaledBitmap(imgBm, imgBm.getWidth(), imgBm.getHeight(), true);
-        p.setColor(Color.BLUE);
-        float posBottomY = calculateAbsoluteBottomYPos(55.0f, 68.0f);
-        float posLeftX = calculateAbsoluteXPos(55.0f, 68.0f);
-        c.drawBitmap(bm, posLeftX, posBottomY, null);
-        pdfDocument.finishPage(page);
-*/
+        mPdfFile = new File(fol, currentImgName+".pdf");
 
         try {
-            //URL url = new URL("https://i.picsum.photos/id/381/200/300.jpg?grayscale");
             PdfWriter.getInstance(document, new FileOutputStream(mPdfFile));
 
             document.open();
-            //document.add(new Paragraph("hello"));
-            Image image =  Image.getInstance(fol.getAbsolutePath()+"/kahve.png");
+            Image image = Image.getInstance(fol.getAbsolutePath() + "/kahve.png");
 
-            //Image image = Image.getInstance(url);
-            image.scaleAbsolute(calculateImageSize(68.0f), calculateImageSize(68.0f));
-            //float y = PageSize.A4.getHeight() - image.getScaledHeight() - 50;
-            float posBottomY = calculateAbsoluteBottomYPos(55.0f,68.0f);
-            float posLeftX = calculateAbsoluteXPos(55.0f,68.0f);
-            //DebugLog.write(PageSize.A4.getHeight()+" - " +image.getScaledHeight() );
-            DebugLog.write("y:" + posBottomY);
-            DebugLog.write("x:" + posLeftX);
+
+            image.scaleAbsolute(calculateImageSize(cap), calculateImageSize(cap));
+            float posBottomY = calculateAbsoluteBottomYPos(55.0f, cap);
+            float posLeftX = calculateAbsoluteXPos(55.0f, cap);
+
             image.setAbsolutePosition(posLeftX, posBottomY);
             document.add(image);
             document.close();
             System.setProperty("http.agent", "Chrome");
+            txtpdf.setText("Dosya hazır");
+            findViewById(R.id.gcp_print_button).setVisibility(View.VISIBLE);
         } catch (Exception e) {
             Log.e("img_create", Objects.requireNonNull(e.getMessage()));
             e.printStackTrace();
@@ -345,5 +400,53 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
     private Float calculateAbsoluteBottomYPos(Float centerPointX, Float sensorDataMM) {
         return PageSize.A4.getHeight() - ((centerPointX * 2.8333f) + (calculateImageSize(sensorDataMM) / 2));
     }
+
+    public void findArduino() {
+        HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
+        if (!usbDevices.isEmpty()) {
+            boolean keep = true;
+            for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+                device = entry.getValue();
+                int deviceVID = device.getVendorId();
+                if (deviceVID == 0x1a86)//Arduino Vendor ID
+                {
+                    DebugLog.write("Ardunio Vendor: " + deviceVID);
+                    PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                    usbManager.requestPermission(device, pi);
+                    keep = false;
+                } else {
+                    DebugLog.write("Ardunio Vendor Error");
+                    connection = null;
+                    device = null;
+                }
+
+                if (!keep)
+                    break;
+            }
+        }
+    }
+
+
+    public void stopConn() {
+        serialPort.close();
+    }
+
+
+    public void sendData(String data) {
+        // datas will send
+        serialPort.write(data.getBytes());
+    }
+
+    public void preparePdf() {
+        int r = 0;
+        if (dataList.size() == 10) {
+            for (int i = 0; i < 10; i++) {
+                r = r + dataList.get(i);
+            }
+            cap = (float) r / 10;
+        }
+        txtar.setText("Veriler hazır. Çap: " + cap);
+    }
+
 
 }

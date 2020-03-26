@@ -9,10 +9,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -23,7 +21,6 @@ import net.mrkaan.printer.R;
 import net.mrkaan.printer.adapter.OrdersVPAdapter;
 import net.mrkaan.printer.model.Queue;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -119,6 +116,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         intent.putExtra("time", queue.getTime());
         intent.putExtra("url", queue.getPictureUrl());
         intent.putExtra("tableNo", queue.getTableNo());
+
         startActivity(intent);
     }
 

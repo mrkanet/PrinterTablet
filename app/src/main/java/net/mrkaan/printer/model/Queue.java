@@ -19,7 +19,6 @@ public class Queue {
     private Location geoLocation;
     private String pictureUrl, tableNo,cafeId;
     private Boolean state, inCafe;
-    //private Date time;
     private Long time;
 
 

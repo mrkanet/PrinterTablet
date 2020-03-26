@@ -5,8 +5,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -33,9 +31,7 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 import net.mrkaan.printer.model.Cafe;
 import net.mrkaan.printer.photoeditor.EditImageActivity;
-import net.mrkaan.printer.ui.activities.MyActivity;
 import net.mrkaan.printer.ui.activities.OrdersActivity;
-import net.mrkaan.printer.ui.activities.PrintScreenActivity;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -61,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
         vFirestore = FirebaseFirestore.getInstance();
         GeoLocation vLocation = getLocation();
 
-        findViewById(R.id.btn_arduino).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), PrintScreenActivity.class)));
-        findViewById(R.id.btn_printer).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), MyActivity.class)));
         findViewById(R.id.btn_orders).setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), OrdersActivity.class)));
         findViewById(R.id.btn_sign_out).setOnClickListener(v -> {
             AuthUI.getInstance().signOut(getApplicationContext());
@@ -89,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
             isSignIn = true;
         }
         try {
-            String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
-            Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
+            //String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
+            //Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
             setCafe(vLocation);
         } catch (Exception e) {
             isSignIn = false;

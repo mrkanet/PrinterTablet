@@ -1,5 +1,6 @@
 package net.mrkaan.printer.adapter;
 
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +16,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
 
+import net.mrkaan.printer.Constants;
 import net.mrkaan.printer.R;
 import net.mrkaan.printer.model.Queue;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.Objects;
 
@@ -52,15 +56,15 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView orderImage;
         TextView orderId;
-        TextView inCafe;
         TextView tableNo;
+        TextView orderTime;
 
         ViewHolder(View itemView) {
             super(itemView);
             orderImage = itemView.findViewById(R.id.order_image);
             orderId = itemView.findViewById(R.id.order_id);
-            inCafe = itemView.findViewById(R.id.in_cafe);
             tableNo = itemView.findViewById(R.id.table_no);
+            orderTime = itemView.findViewById(R.id.order_time);
         }
 
         void bind(final DocumentSnapshot snapshot,
@@ -81,8 +85,14 @@ public abstract class OrdersVPAdapter extends FirestoreAdapter<OrdersVPAdapter.V
             builder.build().load(uri).into(orderImage);
 
             orderId.setText(String.valueOf(queue.getOrderId()));
+
+            Calendar cal = Calendar.getInstance();
+            @SuppressLint("SimpleDateFormat")
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
+            cal.setTimeInMillis(queue.getTime() + Constants.htomil);
+            orderTime.setText(sdf.format(cal.getTime()));
+
             if (queue.getInCafe()) {
-                inCafe.setText(R.string.yes);
                 tableNo.setText(queue.getTableNo());
             }
 

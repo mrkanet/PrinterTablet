@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,7 +16,6 @@ import android.view.View;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,16 +31,16 @@ import androidx.transition.TransitionManager;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import net.mrkaan.printer.Constants;
+import net.mrkaan.printer.R;
+import net.mrkaan.printer.photoeditor.base.BaseActivity;
 import net.mrkaan.printer.photoeditor.filters.FilterListener;
 import net.mrkaan.printer.photoeditor.filters.FilterViewAdapter;
 import net.mrkaan.printer.photoeditor.tools.EditingToolsAdapter;
 import net.mrkaan.printer.photoeditor.tools.ToolType;
-import net.mrkaan.printer.photoeditor.base.BaseActivity;
-import net.mrkaan.printer.R;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.OnSaveBitmap;
@@ -314,10 +312,15 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...");
             File file = new File(Environment.getExternalStorageDirectory()+File.separator+"mrk.printer"+File.separator);
-            file.mkdirs();
+
+            if(!file.exists())
+                file.mkdirs();
+            long time = System.currentTimeMillis();
+            Constants.bm = null;
+            Constants.currentImgName = time+".png";
             file = new File(Environment.getExternalStorageDirectory()
-                    + File.separator + "mrk.printer" + File.separator + ""
-                    + System.currentTimeMillis() + ".png");
+                    + File.separator + Constants.CONTROLLER_PDF_FOLDER + File.separator + ""
+                    + time + ".png");
             try {
                 file.createNewFile();
 
@@ -342,6 +345,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         showSnackbar("Failed to save Image");
                     }
                 });
+                finish();
             } catch (IOException e) {
                 e.printStackTrace();
                 hideLoading();

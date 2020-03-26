@@ -22,28 +22,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:textAlignment="center"
         android:textSize="32sp"
         app:layout_constraintStart_toStartOf="@+id/order_image"
         app:layout_constraintTop_toBottomOf="@+id/order_image" />
 
     <TextView
-        android:id="@+id/in_cafe"
+        android:id="@+id/table_no"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:layout_marginBottom="16dp"
+        android:textAlignment="center"
         android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/order_image"
         app:layout_constraintTop_toBottomOf="@+id/order_id" />
 
     <TextView
-        android:id="@+id/table_no"
+        android:id="@+id/order_time"
         android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:layout_marginStart="32dp"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/in_cafe"
-        app:layout_constraintStart_toEndOf="@+id/in_cafe"
-        app:layout_constraintTop_toTopOf="@+id/in_cafe" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="16dp"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/table_no"
+        app:layout_constraintTop_toBottomOf="@+id/table_no" />
 </androidx.constraintlayout.widget.ConstraintLayout>
