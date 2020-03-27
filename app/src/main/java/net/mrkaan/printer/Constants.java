@@ -27,5 +27,6 @@ public class Constants {
     public static final long htomil = 10800000; //gmt+3 için zaman eklemesi
     public static String currentImgName;
     public static Bitmap bm;
+    public static final int REQ_CODE_PDF = 100;
 
 }

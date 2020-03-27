@@ -57,7 +57,7 @@ public class OrderPreviewActivity extends AppCompatActivity {
 
             String externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
             long time = System.currentTimeMillis();
-            File imageFile = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER + "/" + time + ".jpg");
+            File imageFile = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER + "/" + time + ".png");
 
             try {
                 FileOutputStream out = new FileOutputStream(imageFile);

@@ -31,6 +31,7 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 import net.mrkaan.printer.model.Cafe;
 import net.mrkaan.printer.photoeditor.EditImageActivity;
+import net.mrkaan.printer.ui.activities.GCPActivity;
 import net.mrkaan.printer.ui.activities.OrdersActivity;
 
 import java.util.Collections;
@@ -63,20 +64,25 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Çıkış başarılı", Toast.LENGTH_LONG).show();
             finish();
         });
-        findViewById(R.id.btn_img).setOnClickListener(v ->
-                CropImage.activity()
-                        .setGuidelines(CropImageView.Guidelines.ON)
-                        .setCropShape(CropImageView.CropShape.OVAL)
-                        .setMultiTouchEnabled(false)
-                        .setBackgroundColor(R.color.green_color_picker)
-                        .setScaleType(CropImageView.ScaleType.CENTER)
-                        .setFixAspectRatio(true)
+        findViewById(R.id.btn_img).setOnClickListener(v -> {
+            CropImage.activity()
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setCropShape(CropImageView.CropShape.OVAL)
+                    .setMultiTouchEnabled(false)
+                    .setBackgroundColor(R.color.green_color_picker)
+                    .setScaleType(CropImageView.ScaleType.CENTER)
+                    .setFixAspectRatio(true)
 
-                        .setInitialCropWindowPaddingRatio(0)
-                        .setMinCropWindowSize(100,100)
-                        .setMaxZoom(8)
+                    .setInitialCropWindowPaddingRatio(0)
+                    .setMinCropWindowSize(100, 100)
+                    .setMaxZoom(8)
 
-                        .start(this));
+                    .start(this);
+            Intent i = new Intent(getApplicationContext(), GCPActivity.class);
+            startActivityForResult(i,Constants.REQ_CODE_PDF);
+
+        });
+
 
         if (shouldStartSignIn()) {
             startSignIn();
@@ -131,10 +137,13 @@ public class MainActivity extends AppCompatActivity {
                 String s = data.getStringExtra("ok_photo_uri");
                 printUri = Uri.parse(s);
             } catch (NullPointerException e) {
-                Log.e("Uri did not come", e.getMessage());
+                Log.e("Uri did not come", Objects.requireNonNull(e.getMessage()));
             }
             //printjobs
-        } else {
+        } else if(requestCode == Constants.REQ_CODE_PDF){
+            Toast.makeText(getApplicationContext(),"Görsel başarılı",Toast.LENGTH_SHORT).show();
+        }
+        else {
             Toast.makeText(this, "İzinsiz Erişim", Toast.LENGTH_SHORT).show();
         }
     }
