@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="wrap_content"
+        android:layout_height="640dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3">
+
+            <ImageView
+                android:id="@+id/iv_coffees"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="0"
+                android:layout_column="0"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/coffees500" />
+
+            <ImageView
+                android:id="@+id/iv_clown"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="0"
+                android:layout_column="1"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/clown500" />
+
+            <ImageView
+                android:id="@+id/iv_anibus"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="0"
+                android:layout_column="2"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/anibus500" />
+
+            <ImageView
+                android:id="@+id/iv_coffee"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="1"
+                android:layout_column="0"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/coffee500" />
+
+            <ImageView
+                android:id="@+id/iv_king"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="1"
+                android:layout_column="1"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/king500" />
+
+            <ImageView
+                android:id="@+id/iv_mummy"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="1"
+                android:layout_column="2"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/mummy500" />
+
+            <ImageView
+                android:id="@+id/iv_owl"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="2"
+                android:layout_column="0"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/owl500" />
+
+            <ImageView
+                android:id="@+id/iv_pharaoh"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="2"
+                android:layout_column="1"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/pharaoh500" />
+
+            <ImageView
+                android:id="@+id/iv_socrates"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="2"
+                android:layout_column="2"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/socrates500" />
+
+            <ImageView
+                android:id="@+id/iv_yoda"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_row="3"
+                android:layout_column="1"
+                android:layout_weight="1"
+                android:onClick="thisImage"
+                app:srcCompat="@drawable/yoda500" />
+
+
+        </GridLayout>
+    </ScrollView>
+
+
+
+
+
+    <Button
+        android:id="@+id/btn_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:text="yükle"
+        app:layout_constraintEnd_toEndOf="@+id/scrollView"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView" />
+
+    <TextView
+        android:id="@+id/txt_upload"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Veya kendi cihazınızdaki görsellerden birisi üzerinde tasarım yapabilirsiniz"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="@+id/btn_upload"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/btn_upload"
+        app:layout_constraintTop_toBottomOf="@+id/btn_upload" />
+
+
+    <TextView
+        android:id="@+id/txt_choose"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="İsterseniz hazır kütüphanemizdeki görsellerden birisini seçebilirsiniz"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_upload"
+        app:layout_constraintEnd_toStartOf="@+id/btn_upload"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/scrollView"
+        app:layout_constraintTop_toTopOf="@+id/btn_upload" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_images"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
