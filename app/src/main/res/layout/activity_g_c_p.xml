@@ -36,21 +36,52 @@
         android:id="@+id/txt_sign"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:text="Kullanıcı"
-        app:layout_constraintBottom_toTopOf="@+id/txt_arduino"
+        android:layout_marginTop="64dp"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="@+id/txt_arduino"
-        app:layout_constraintStart_toStartOf="@+id/txt_arduino" />
+        app:layout_constraintHorizontal_bias="0.507"
+        app:layout_constraintStart_toStartOf="@+id/txt_arduino"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/txt_arduino"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="Arduino bekleniyor.."
-        app:layout_constraintBottom_toTopOf="@+id/gcp_print_button"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/txt_sign" />
+
+    <LinearLayout
+        android:id="@+id/llh_send_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@+id/txt_arduino"
+        app:layout_constraintStart_toStartOf="@+id/txt_arduino"
+        app:layout_constraintTop_toBottomOf="@+id/txt_arduino">
+
+        <EditText
+            android:id="@+id/txt_send_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="Data girin"
+            android:inputType="numberSigned|numberDecimal"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/btn_send_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="gönder" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/txt_pdf"
@@ -58,9 +89,38 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="Dosya hazırlanıyor..."
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="@+id/txt_arduino"
+        app:layout_constraintHorizontal_bias="0.8"
         app:layout_constraintStart_toStartOf="@+id/txt_arduino"
-        app:layout_constraintTop_toBottomOf="@+id/txt_arduino" />
+        app:layout_constraintTop_toBottomOf="@+id/llh_send_data" />
+
+    <LinearLayout
+        android:id="@+id/llh_cap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@+id/txt_pdf"
+        app:layout_constraintStart_toStartOf="@+id/txt_pdf"
+        app:layout_constraintTop_toBottomOf="@+id/txt_pdf">
+
+        <EditText
+            android:id="@+id/txt_cap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Çapı giriniz (mm)"
+            android:inputType="numberSigned|number|numberDecimal"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/btn_cap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Çap" />
+
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

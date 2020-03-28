@@ -23,6 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
+        <activity android:name=".ui.activities.ChooseActivity" />
         <activity android:name=".ui.activities.OrderPreviewActivity" />
         <activity android:name=".ui.activities.OrdersActivity" />
         <activity android:name=".MainActivity">
@@ -32,7 +33,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.GCPActivity" >
+        <activity android:name=".ui.activities.GCPActivity">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -43,22 +44,22 @@
         </activity>
         <activity android:name=".Base" />
         <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" />
-
         <activity
             android:name=".photoeditor.EditImageActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
-
             <intent-filter
                 android:label="@string/app_intent_name"
                 android:scheme="file"
                 tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.arduino"/>
+        <activity android:name=".ui.activities.arduino" />
 
         <meta-data
             android:name="preloaded_fonts"

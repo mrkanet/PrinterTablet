@@ -1,5 +1,6 @@
 package net.mrkaan.printer.ui.activities;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,9 +12,13 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,14 +59,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import static net.mrkaan.printer.Constants.ACTION_USB_PERMISSION;
-import static net.mrkaan.printer.Constants.currentImgName;
 
 public class GCPActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private static final int REQUEST_SINGIN = 1;
-    private TextView txt, txtar, txtpdf;
+    private TextView txt, txtar, txtpdf;// txtarp;
     public static final String TAG = "mysupertag";
     public static final String URLBASE = "https://www.google.com/cloudprint/";
     private String YOUR_ACCESS_TOKEN;
@@ -70,6 +74,7 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
     private File mPdfFile;
     public static Bitmap imgBm;
     public Intent intentBefore;
+    LinearLayout llhCap;
 
     public UsbManager usbManager;
     UsbDevice device;
@@ -90,8 +95,10 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                 dataList.add(Integer.parseInt(data));
             } else {
                 two = false;
-                preparePdf();
+                setCap();
             }
+        } else if (Integer.parseInt(data) == 3) {
+            getCapFromUser();
         }
 
     };
@@ -99,9 +106,9 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
         @Override
         public void onReceive(Context context, Intent intent) {
-            switch (intent.getAction()) {
+            switch (Objects.requireNonNull(intent.getAction())) {
                 case ACTION_USB_PERMISSION:
-                    boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+                    boolean granted = Objects.requireNonNull(intent.getExtras()).getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                     if (granted) {
                         DebugLog.write();
                         connection = usbManager.openDevice(device);
@@ -129,16 +136,32 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
 
                 case UsbManager.ACTION_USB_DEVICE_ATTACHED:
                     findArduino();
+                    getCapFromArd();
                     break;
 
                 case UsbManager.ACTION_USB_DEVICE_DETACHED:
                     stopConn();
+                    getCapFromUser();
                     break;
             }
         }
 
 
     };
+
+    private void getCapFromUser() {
+        //txtar.setVisibility(View.INVISIBLE);
+        txtar.setText("Verilerin gelişinde sorun oluştu. Lütfen çapı elinizle girin.");
+        //txtarp.setVisibility(View.VISIBLE);
+        llhCap.setVisibility(View.VISIBLE);
+    }
+
+    public void getCapFromArd() {
+        //txtar.setVisibility(View.VISIBLE);
+        //txtarp.setVisibility(View.GONE);
+        txtar.setText("Arduino bekleniyor..");
+        llhCap.setVisibility(View.GONE);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,13 +189,42 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
 
             printPdf(mPdfFile.getAbsolutePath(), getResources().getString(R.string.gcp_id));
         });
-        findViewById(R.id.create_pdf_button).setOnClickListener(view -> {
-            DebugLog.write();
-            createImage();
+
+        findViewById(R.id.btn_cap).setOnClickListener(v -> {
+            EditText editText = findViewById(R.id.txt_cap);
+            Editable editable = editText.getText();
+            if (editable != null) {
+                int c = Integer.parseInt(editable.toString());
+                if (c < 68 || c > 110) {
+                    Toast.makeText(getApplicationContext(), "Lütfen geçerli bir değer girin (68-110 arası)", Toast.LENGTH_SHORT).show();
+                } else {
+                    cap = c;
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "Geçerli bir değer giriniz", Toast.LENGTH_SHORT).show();
+            }
+
         });
+
+        findViewById(R.id.btn_send_data).setOnClickListener(v -> {
+            EditText text = findViewById(R.id.txt_send_data);
+            Editable editable = text.getText();
+            if (editable != null) {
+                String data = text.getText().toString();
+                sendData(data);
+            }else {
+                Toast.makeText(getApplicationContext(), "Lütfen değer girin", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         txt = findViewById(R.id.txt_sign);
         txtar = findViewById(R.id.txt_arduino);
+        txtar.setVisibility(View.VISIBLE);
+        //txtarp = findViewById(R.id.txt_arduino_problem);
+        //txtarp.setVisibility(View.GONE);
         txtpdf = findViewById(R.id.txt_pdf);
+        llhCap = findViewById(R.id.llh_cap);
+        llhCap.setVisibility(View.GONE);
 
         //setted
 
@@ -187,7 +239,6 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
             }
             // ...
         };
-
 
 
         IntentFilter filter = new IntentFilter();
@@ -207,6 +258,7 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
             if (result.isSuccess()) {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = result.getSignInAccount();
+                assert account != null;
                 firebaseAuthWithGoogle(account);
             } else {
                 // Google Sign In failed, update UI appropriately
@@ -216,6 +268,7 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
         DebugLog.write("firebaseAuthWithGoogle:" + acct.getId());
 
@@ -228,8 +281,9 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
                     // If sign in fails, display a message to the user. If sign in succeeds
                     // the auth state listener will be notified and logic to handle the
                     // signed in user can be handled in the listener.
-                    FirebaseUser user = task.getResult().getUser();
-                    txt.setText(user.getDisplayName() + "\n" + user.getEmail());//todo
+                    FirebaseUser user = Objects.requireNonNull(task.getResult()).getUser();
+                    assert user != null;
+                    txt.setText(user.getDisplayName() + "\n" + user.getEmail());
                     if (!task.isSuccessful()) {
                         DebugLog.write("fsignInWithCredential", task.getException());
 
@@ -353,6 +407,7 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
     }
 
 
+    @SuppressLint("SetTextI18n")
     private void createImage() {
 
         Document document = new Document(new Rectangle(595, 842), 0, 0, 0, 0);
@@ -363,19 +418,19 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
 
         externalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
         File fol = new File(externalStorageDirectory, Constants.CONTROLLER_PDF_FOLDER);
-        mPdfFile = new File(fol, currentImgName+".pdf");
+        mPdfFile = new File(fol, Constants.currentImgName + ".pdf");
 
 
         try {
             PdfWriter.getInstance(document, new FileOutputStream(mPdfFile));
 
             document.open();
-            Image image = Image.getInstance(fol.getAbsolutePath() + "/"+currentImgName+".png");
+            Image image = Image.getInstance(fol.getAbsolutePath() + "/" + Constants.currentImgName + ".png");
 
 
             image.scaleAbsolute(calculateImageSize(cap), calculateImageSize(cap));
-            float posBottomY = calculateAbsoluteBottomYPos(55.0f, cap);
-            float posLeftX = calculateAbsoluteXPos(55.0f, cap);
+            float posBottomY = calculateAbsoluteBottomYPos(cap);
+            float posLeftX = calculateAbsoluteXPos(cap);
 
             image.setAbsolutePosition(posLeftX, posBottomY);
             document.add(image);
@@ -394,12 +449,12 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
         return 2.8333f * sensorDataMM;
     }
 
-    private Float calculateAbsoluteXPos(Float centerPointXMM, Float sensorDataMM) {
-        return (centerPointXMM * 2.8333f) - (calculateImageSize(sensorDataMM) / 2);
+    private Float calculateAbsoluteXPos(Float sensorDataMM) {
+        return (Constants.centerPoint * 2.8333f) - (calculateImageSize(sensorDataMM) / 2);
     }
 
-    private Float calculateAbsoluteBottomYPos(Float centerPointX, Float sensorDataMM) {
-        return PageSize.A4.getHeight() - ((centerPointX * 2.8333f) + (calculateImageSize(sensorDataMM) / 2));
+    private Float calculateAbsoluteBottomYPos(Float sensorDataMM) {
+        return PageSize.A4.getHeight() - ((Constants.centerPoint * 2.8333f) + (calculateImageSize(sensorDataMM) / 2));
     }
 
     public void findArduino() {
@@ -435,10 +490,16 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
 
     public void sendData(String data) {
         // datas will send
-        serialPort.write(data.getBytes());
+
+        try{
+            serialPort.write(data.getBytes());
+        }catch (NullPointerException e){
+            Toast.makeText(getApplicationContext(), "Arduino bağlı değil",Toast.LENGTH_SHORT).show();
+        }
     }
 
-    public void preparePdf() {
+    @SuppressLint("SetTextI18n")
+    public void setCap() {
         int r = 0;
         if (dataList.size() == 10) {
             for (int i = 0; i < 10; i++) {
@@ -447,6 +508,7 @@ public class GCPActivity extends AppCompatActivity implements GoogleApiClient.On
             cap = (float) r / 10;
         }
         txtar.setText("Veriler hazır. Çap: " + cap);
+        createImage();
     }
 
 

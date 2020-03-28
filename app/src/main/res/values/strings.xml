@@ -52,7 +52,7 @@
 
     <string name="crop_image_activity_no_permissions">Cancelling, required permissions are not granted</string>
 
-<!-- photo editor res -->
+    <!-- photo editor res -->
     <string name="label_brush">Brush</string>
     <string name="label_emoji">Emoji</string>
     <string name="label_sticker">Sticker</string>
@@ -73,5 +73,8 @@
     <string name="table_num">"Masa numarası\n"</string>
     <string name="print">Bastır</string>
     <string name="cancel">İptal et</string>
-    <string name="back">Geri dön</string>>
+    <string name="back">Geri dön</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>>
 </resources>

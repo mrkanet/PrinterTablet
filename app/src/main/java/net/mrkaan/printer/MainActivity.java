@@ -26,12 +26,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import net.mrkaan.printer.model.Cafe;
-import net.mrkaan.printer.photoeditor.EditImageActivity;
-import net.mrkaan.printer.ui.activities.GCPActivity;
+import net.mrkaan.printer.ui.activities.ChooseActivity;
 import net.mrkaan.printer.ui.activities.OrdersActivity;
 
 import java.util.Collections;
@@ -65,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
             finish();
         });
         findViewById(R.id.btn_img).setOnClickListener(v -> {
+            /*
             CropImage.activity()
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .setCropShape(CropImageView.CropShape.OVAL)
@@ -78,8 +76,9 @@ public class MainActivity extends AppCompatActivity {
                     .setMaxZoom(8)
 
                     .start(this);
-            Intent i = new Intent(getApplicationContext(), GCPActivity.class);
-            startActivityForResult(i,Constants.REQ_CODE_PDF);
+                    */
+            Intent chooseAct = new Intent(getApplicationContext(), ChooseActivity.class);
+            startActivity(chooseAct);
 
         });
 
@@ -118,32 +117,20 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
-                resultUri = result.getUri();
-                Intent i = new Intent(this, EditImageActivity.class);
-                i.putExtra("image_uri", resultUri.toString());
-                startActivityForResult(i, PHOTO_OK);
-
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Log.e("Crop Error", Objects.requireNonNull(result.getError().getMessage()));
-            }
-        } else if (requestCode == RC_SIGN_IN) {
+        if (requestCode == RC_SIGN_IN) {
             String str = FirebaseAuth.getInstance(vFirestore.getApp()).getCurrentUser().getDisplayName();
             Toast.makeText(this, "Hoşgeldiniz " + str, Toast.LENGTH_SHORT).show();
         } else if (requestCode == PHOTO_OK) {
             try {
-                String s = data.getStringExtra("ok_photo_uri");
-                printUri = Uri.parse(s);
+                //String s = data.getStringExtra("ok_photo_uri");
+                //printUri = Uri.parse(s);
             } catch (NullPointerException e) {
                 Log.e("Uri did not come", Objects.requireNonNull(e.getMessage()));
             }
             //printjobs
-        } else if(requestCode == Constants.REQ_CODE_PDF){
-            Toast.makeText(getApplicationContext(),"Görsel başarılı",Toast.LENGTH_SHORT).show();
-        }
-        else {
+        } else if (requestCode == Constants.REQ_CODE_PDF) {
+            Toast.makeText(getApplicationContext(), "Görsel başarılı", Toast.LENGTH_SHORT).show();
+        } else {
             Toast.makeText(this, "İzinsiz Erişim", Toast.LENGTH_SHORT).show();
         }
     }

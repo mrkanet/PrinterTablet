@@ -28,5 +28,11 @@ public class Constants {
     public static String currentImgName;
     public static Bitmap bm;
     public static final int REQ_CODE_PDF = 100;
+    public static final float centerPoint = 55f;
+    public static boolean isSepiaNeeded = true;
+    public static final short order = 1;
+    public static final short shape = 2;
+    public static final short image = 3;
+    public static short whereImg = order;
 
 }

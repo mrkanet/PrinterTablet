@@ -9,12 +9,16 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +41,7 @@ import net.mrkaan.printer.photoeditor.filters.FilterListener;
 import net.mrkaan.printer.photoeditor.filters.FilterViewAdapter;
 import net.mrkaan.printer.photoeditor.tools.EditingToolsAdapter;
 import net.mrkaan.printer.photoeditor.tools.ToolType;
+import net.mrkaan.printer.ui.activities.GCPActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +85,11 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     @VisibleForTesting
     Uri mSaveImageUri;
 
+    //threads
+    HandlerThread handlerThread;
+    Looper looper;
+    Handler handler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,8 +99,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
 
         //imageUri = Uri.parse(s);
-        setImage();
-
+        if (Constants.currentImgName != null)
+            setImage();
+        else
+            setBitmap();
         handleIntentImage(mPhotoEditorView.getSource());
 
         mWonderFont = Typeface.createFromAsset(getAssets(), "beyond_wonderland.ttf");
@@ -126,44 +138,81 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         // mPhotoEditorView.getSource().setImageResource(R.drawable.color_palette);
     }
 
+    private void setBitmap() {
+        //bm = Constants.bm;
+        cropOval(Constants.bm);
+    }
+
     private void setImage() {
 
         initViews();
         Intent i = getIntent();
-        String s = i.getStringExtra("image_uri");
-        ImageView iv = new ImageView(getApplicationContext());
-        iv.setImageURI(Uri.parse(s));
+        ImageView iv;
+        if (Constants.whereImg == Constants.shape){
+            int k = i.getIntExtra("image_uri",0);
+            iv = new ImageView(getApplicationContext());
+            iv.setImageDrawable(getResources().getDrawable(k));
+        } else {
+            String s = i.getStringExtra("image_uri");
+            iv = new ImageView(getApplicationContext());
+            iv.setImageURI(Uri.parse(s));
+        }
         bm = ((BitmapDrawable) iv.getDrawable()).getBitmap();
         bm = CropImage.toOvalBitmap(bm);
-
         mPhotoEditorView.getSource().setImageBitmap(bm);
-        sepia();
+        //cropOval(bm);
+        // sepia();
+    }
+
+    private void cropOval(Bitmap bitmap) {
+        fun(() -> {
+            bm = CropImage.toOvalBitmap(bitmap);
+            mPhotoEditorView.getSource().setImageBitmap(bm);
+        });
     }
 
     @SuppressLint("ResourceAsColor")
     private void sepia() {
-        if (mPhotoEditor != null) {
-            mPhotoEditor.setFilterEffect(PhotoFilter.GRAY_SCALE);
+        if (Constants.isSepiaNeeded) {
+            if (mPhotoEditor != null) {
+                try {
+                    try {
+                        mPhotoEditor.setFilterEffect(PhotoFilter.GRAY_SCALE);
+                    } catch (Exception e) {
+                        sepia();
+                    }
+                    mPhotoEditor.saveAsBitmap(new OnSaveBitmap() {
+                        @Override
+                        public void onBitmapReady(Bitmap saveBitmap) {
 
-            mPhotoEditor.saveAsBitmap(new OnSaveBitmap() {
-                @Override
-                public void onBitmapReady(Bitmap saveBitmap) {
-                    bm = CropImage.toOvalBitmap(saveBitmap);
-                    mPhotoEditorView.getSource().setImageBitmap(bm);
+                            fun(() -> {
+                                        vm = CropImage.toOvalBitmap(saveBitmap);
+                                        //Toast.makeText(getApplicationContext(),"Başarılı", Toast.LENGTH_LONG).show();
+                                    }
+                            );
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getApplicationContext(), "Bir hata oluştu", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    //mPhotoEditorView.getSource();
+                    //Drawable d = mPhotoEditorView.get
+                    //vm = ((BitmapDrawable) d).getBitmap();
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "Hata", Toast.LENGTH_SHORT).show();
+                    Log.e("Error", e.getMessage());
+                    Log.e("Error", "Sepia hata");
+                    sepia();
                 }
 
-                @Override
-                public void onFailure(Exception e) {
-
-                }
-            });
-            //mPhotoEditorView.getSource();
-            //Drawable d = mPhotoEditorView.get
-            //vm = ((BitmapDrawable) d).getBitmap();
-
-
+            }
         }
+
     }
+
 
     private void handleIntentImage(ImageView source) {
         Intent intent = getIntent();
@@ -314,7 +363,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 file.mkdirs();
             long time = System.currentTimeMillis();
             Constants.bm = null;
-            Constants.currentImgName = time + ".png";
+            Constants.currentImgName = time + "";
             file = new File(Environment.getExternalStorageDirectory()
                     + File.separator + Constants.CONTROLLER_PDF_FOLDER + File.separator
                     + time + ".png");
@@ -331,19 +380,23 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     @Override
                     public void onSuccess(@NonNull String imagePath) {
                         hideLoading();
-                        showSnackbar("Image Saved Successfully");
+                        //showSnackbar("Image Saved Successfully");
                         mSaveImageUri = Uri.fromFile(new File(imagePath));
                         mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
+
+                        Intent i = new Intent(getApplicationContext(), GCPActivity.class);
+                        startActivity(i);
+
                     }
 
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         hideLoading();
                         showSnackbar("Failed to save Image");
+                        Constants.currentImgName = "";
                     }
                 });
-                Constants.currentImgName = time + "";
-                finish();
+                //Constants.currentImgName = time + "";
             } catch (IOException e) {
                 e.printStackTrace();
                 hideLoading();
@@ -491,6 +544,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @Override
     public void onBackPressed() {
+
         if (mIsFilterVisible) {
             showFilter(false);
             mTxtCurrentTool.setText(R.string.app_name);
@@ -498,6 +552,40 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             showSaveDialog();
         } else {
             super.onBackPressed();
+        }
+    }
+
+    public void fun(Runnable r) {
+        handlerThread = new HandlerThread("ImageHandlerThread");
+        handlerThread.start();
+        looper = handlerThread.getLooper();
+        handler = new Handler(looper);
+        handler.post(r);
+        handler.post(() -> {
+            Handler mainHandler = new Handler(getApplicationContext().getMainLooper());
+
+            mainHandler.post(() -> {
+                if (vm == null) {
+                    Toast.makeText(getApplicationContext(), "false", Toast.LENGTH_LONG).show();
+
+                } else {
+
+                    PhotoEditorView mPhotoEditorView = findViewById(R.id.photoEditorView);
+                    mPhotoEditorView.getSource().setImageBitmap(vm);
+                    //handlerThread.quit();
+                }
+            });
+        });
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            handlerThread.quit();
+        }catch (Exception e){
+            return;
         }
     }
 }

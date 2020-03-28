@@ -141,7 +141,7 @@ public class OrdersActivity extends AppCompatActivity implements OrdersVPAdapter
         Location location = new Location("");
         location.setLatitude(123123);
         location.setLongitude(343123);
-        String url = "https://i.imgur.com/hueoozZ.jpg";
+        String url = "https://firebasestorage.googleapis.com/v0/b/coffeeprinter.appspot.com/o/preloaded_images%2F500%2Fsocrates500.png?alt=media";
         //Date time = new Date("2");
         Random random = new Random();
         return new Queue(11, FirebaseAuth.getInstance().getCurrentUser().getUid(), location, true, url, true, abs(random.nextLong()), "B23", abs(random.nextInt() % 100));
